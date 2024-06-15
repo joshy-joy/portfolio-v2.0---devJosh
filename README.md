@@ -1,6 +1,6 @@
 # portfolio-ui
 
-This template should help get you started developing with Vue 3 in Vite.
+This is the second iteration of my portfolio. Completely migrating to vue.js from flask and Jinja templates.
 
 ## Recommended IDE Setup
 
