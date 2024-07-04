@@ -21,15 +21,14 @@ export default {};
     justify-content: flex-start;
     align-items: center;
     min-height: 5vh;
-    min-width: 100vw;
-    z-index: 999;
+    min-width: 100%;
     background-color: #181818;
     border-bottom: 1px solid #2b2b2b;
     font-family: Arial, sans-serif;
 }
 
 .search-bar {
-    min-width: calc(100% - 25px);
+    min-width: calc(100% - 50px);
     display: flex;
     justify-content: center;
     align-items: center;

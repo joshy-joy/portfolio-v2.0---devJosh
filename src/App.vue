@@ -8,7 +8,7 @@ export default {};
     <div class="row">
       <portfolio-header></portfolio-header>
     </div>
-    <div class="row">
+    <div class="row section">
       <side-menu></side-menu>
       <portfolio-content></portfolio-content>
     </div>
@@ -22,5 +22,9 @@ export default {};
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
 .container-fluid {
   font-family: 'Fira Code' !important;
+}
+
+.section {
+  min-height: 95vh;
 }
 </style>

@@ -19,17 +19,13 @@ export default {
 
 <template>
     <div class="col-sm-9 content">
-        <div class="row">
-            <Home></Home>
-        </div>
+        <Home></Home>
     </div>
 </template>
 
 <style scoped>
  .content {
-    min-height: 98vh;
     background-color: #1f1f1f;
     border: 0.5px solid #181818;
  }
-</style>regarding ?
-1
+</style>
