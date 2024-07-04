@@ -12,6 +12,6 @@ export default {};
  .sidemenu {
     min-height: 98vh;
     background-color: #181818;
-    border: 1px solid #2b2b2b;
+    border-right: 1px solid #2b2b2b;
  }
 </style>

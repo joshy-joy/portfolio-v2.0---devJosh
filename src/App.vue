@@ -5,7 +5,9 @@ export default {};
 
 <template>
   <div class="container-fluid">
-    <portfolio-header></portfolio-header>
+    <div class="row">
+      <portfolio-header></portfolio-header>
+    </div>
     <div class="row">
       <side-menu></side-menu>
       <portfolio-content></portfolio-content>
