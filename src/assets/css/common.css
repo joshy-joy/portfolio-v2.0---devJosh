@@ -1,7 +1,23 @@
+.link {
+    text-decoration: none !important;
+}
+
+.link:hover {
+    text-decoration: none !important;
+}
+
 .code-blue {
-    color: #4D5BCE;
+    color: #4D5BCE !important;
 }
 
 .code-comments {
-    color: #607B96;
+    color: #607B96 !important;
+}
+
+.code-green {
+    color: #2a907b !important;
+}
+
+.code-orange {
+    color: #e99287 !important;
 }
