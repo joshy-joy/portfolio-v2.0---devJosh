@@ -21,3 +21,20 @@
 .code-orange {
     color: #e99287 !important;
 }
+
+.code-violet {
+    color: #9f70b6;
+}
+
+.code-blue {
+    color: #495acb;
+}
+
+/* intentation style */
+.intent-L1 {
+    margin-left: 20px !important;
+}
+
+.intent-L2 {
+    margin-left: 40px !important;
+}
