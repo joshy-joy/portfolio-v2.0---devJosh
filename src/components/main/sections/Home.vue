@@ -23,7 +23,9 @@ export default {
                     <div class="personal-details">
                         <p class="intro">Hi all. I am</p>
                         <h1 class="name">Joshy Joy</h1>
-                        <h4 class="profession code-blue">> Software Development Engineer II</h4>
+                        <h4 class="profession code-blue">> Senior Software Engineer </h4>
+                    </div>
+                    <div class="overview-wrap">
                         <p class="overview code-comments">
                             // He is passioned for crafting innovative solutions and
                         </p>
@@ -87,10 +89,15 @@ export default {
 
 .personal-details-wrap {
     display: flex;
-    justify-content: flex-start;
-    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
     max-width: 500px;
     margin: 0 20px 0 0;
+}
+
+.personal-details {
+    margin: 0 0 50px 0;
 }
 
 .intro {
@@ -114,8 +121,12 @@ export default {
 .profession {
     font-style: normal;
     font-weight: 450;
-    font-size: 23px;
+    font-size: 25px;
     line-height: 42px;
+}
+
+.overview-wrap {
+    margin: 50px 0 0 0;
 }
 
 .overview {
