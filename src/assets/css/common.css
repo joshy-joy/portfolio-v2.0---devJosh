@@ -38,3 +38,9 @@
 .intent-L2 {
     margin-left: 40px !important;
 }
+
+.btn {
+    background: #0279cb;
+    border-radius: 0;
+    color: white;
+}
