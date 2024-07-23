@@ -47,7 +47,9 @@ export default {
                             <code-block></code-block>
                         </div>
                         <div class="code-block">
-                            <code-block></code-block>
+                            <a href="https://github.com/joshy-joy/golang-gRPC-chat-app" target="blank">
+                                <code-block></code-block>
+                            </a>
                         </div>
                         <div class="code-block block-fade">
                             <code-block></code-block>
@@ -170,15 +172,20 @@ export default {
 }
 
 .code-block {
-    background: #001221;
+    background: #181818;
     padding: 20px;
     margin: 10px 0 10px 0;
     border-radius: 10px;
-    opacity: 70%;
+    opacity: 90%;
+    border: 0.5px solid #474747;
+}
+
+.code-block a {
+    text-decoration: none;
 }
 
 .block-fade {
-    opacity: 30%;
+    opacity: 40%;
 }
 
 .code-starter {
