@@ -22,9 +22,11 @@ export default {};
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
 .container-fluid {
   font-family: 'Fira Code' !important;
+  min-width: 100vw;
 }
 
 .section {
-  min-height: 95vh;
+  min-height: 94vh;
+  min-width: 100vw;
 }
 </style>
