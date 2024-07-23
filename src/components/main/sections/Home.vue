@@ -79,6 +79,7 @@ export default {
 .line-number-wrap {
     max-height: 90vh;
     overflow: hidden;
+    padding: 5px 0 0 0;
 }
 
 .line-number {
@@ -181,7 +182,7 @@ export default {
 }
 
 .code-starter {
-    margin-top: -175px;
+    margin-top: -80px;
 }
 
 /*media query for screen width less than 1000px */
