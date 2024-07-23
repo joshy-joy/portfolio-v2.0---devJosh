@@ -13,11 +13,7 @@ export default {
 <template>
     <div class="row">
         <div class="col-sm-12">
-            <div class="line-number-wrap">
-                    <ul class="line-number">
-                        <li class="line-number-value" v-for="index in 51" :key="index">{{ index }}</li>
-                    </ul>
-            </div>
+            <line-number></line-number>
             <div class="container">
                 <div class="home-content-wrap">
                     <div class="personal-details-wrap">
@@ -47,7 +43,7 @@ export default {
                             <code-block></code-block>
                         </div>
                         <div class="code-block">
-                            <a href="https://github.com/joshy-joy/golang-gRPC-chat-app" target="blank">
+                            <a class="link" href="https://github.com/joshy-joy/golang-gRPC-chat-app" target="blank">
                                 <code-block></code-block>
                             </a>
                         </div>
@@ -73,6 +69,7 @@ export default {
 }
 
 .container {
+    height: 90vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -178,10 +175,6 @@ export default {
     border-radius: 10px;
     opacity: 90%;
     border: 0.5px solid #474747;
-}
-
-.code-block a {
-    text-decoration: none;
 }
 
 .block-fade {

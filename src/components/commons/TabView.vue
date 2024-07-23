@@ -27,13 +27,13 @@ export default {
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    border-bottom: 0.5px solid #474747;
+    border-bottom: 1px solid #2b2b2b;
 }
 
 .tab-section {
     height: 100%;
     text-align: center;
-    border-right: 0.5px solid #474747;
+    border-right: 1px solid #2b2b2b;
     display: flex;
     justify-content: space-between;
     align-items: center;

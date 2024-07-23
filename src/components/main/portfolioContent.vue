@@ -6,23 +6,25 @@ import Projects from './sections/Projects.vue'
 import Blogs from './sections/Blogs.vue'
 import Contact from './sections/Contact.vue'
 import TabView from '../commons/TabView.vue'
+import TheLineNumber from '../commons/TheLineNumber.vue'
 
 export default {
     components : {
-        Home,
-        About,
-        Projects,
-        Blogs,
-        Contact,
-        TabView
+        'home': Home,
+        'about': About,
+        'projects': Projects,
+        'blogs': Blogs,
+        'contact': Contact,
+        'tab-view': TabView,
     },
 };
 </script>
 
 <template>
     <div class="col-sm-9 content">
-        <TabView></TabView>
-        <Home></Home>
+        <tab-view></tab-view>
+        <!-- <home></home> -->
+         <about></about>
     </div>
 </template>
 

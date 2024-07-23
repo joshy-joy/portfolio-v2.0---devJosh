@@ -26,6 +26,10 @@
     color: #9f70b6;
 }
 
+.code-yellow {
+    color: #ffa656;
+}
+
 /* intentation style */
 .intent-L1 {
     margin-left: 20px !important;
