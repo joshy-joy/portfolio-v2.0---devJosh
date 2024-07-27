@@ -52,10 +52,20 @@ body {
 }
 .section {
   position: fixed;
-  margin: 0;
-  padding: 0;
+  margin: 0 !important;
+  padding: 0 !important;
   top: 45px;
   left: 0;
-  height: calc(100% - 45px);
+  height: calc(100% - 70px);
+  width: 100%;
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 25px;
+    width: 100%;
+    background-color: #0279CB;
 }
 </style>

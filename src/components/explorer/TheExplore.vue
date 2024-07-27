@@ -5,21 +5,22 @@ export default {};
 </script>
 
 <template>
-    <div class="col-sm-3 sidemenu"></div>
+    <div class="col-sm-3"></div>
 </template>
 
 <style scoped>
- .sidemenu {
+ .col-sm-3 {
     background-color: #181818;
     border-right: 1px solid #2b2b2b;
     height: 100%;
-    max-height: 100%;
+    max-height: 100%
  }
 
   /*media query for screen width less than 1000px */
 @media all and (max-width: 574px) {
-    .sidemenu {
+    .col-sm-3 {
         display: none;
+
     }
 }
 </style>

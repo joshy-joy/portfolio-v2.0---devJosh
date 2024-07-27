@@ -60,41 +60,24 @@ export default {
 <style scoped>
 .row {
     width: 100%;
+    height: 100%;
 }
 
 .col-sm-12 {
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 .container {
-    height: 90vh;
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-.line-number-wrap {
-    max-height: 90vh;
-    overflow: hidden;
-    padding: 5px 0 0 0;
-}
-
-.line-number {
-    color: white;
-    margin: 0;
-    padding: 0 15px 0 15px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    list-style: none;
-}
-
-.line-number-value {
-    text-decoration: none;
-    color: #6f7681;
+    width: 100%;
+    height: 100%;
 }
 
 .home-content-wrap {

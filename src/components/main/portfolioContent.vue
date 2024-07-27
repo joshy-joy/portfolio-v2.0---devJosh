@@ -34,7 +34,8 @@ export default {
 
 <style scoped>
 .col-sm-9 {
-    padding: 0;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
  .content {
@@ -53,7 +54,8 @@ export default {
  .section-view {
     position: relative;
     top: 30px;
-    max-height: calc(100% - 30px);
+    height: calc(100% - 30px);
+    width: 100%;
  }
 
  .section-view::-webkit-scrollbar {
