@@ -7,7 +7,7 @@ export default {
 <template>
     <div class="line-number-wrap">
         <ul class="line-number">
-            <li class="line-number-value" v-for="index in 51" :key="index">{{ index }}</li>
+            <li class="line-number-value" v-for="index in 100" :key="index">{{ index }}</li>
         </ul>
     </div>
 </template>
