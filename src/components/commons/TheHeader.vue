@@ -20,7 +20,7 @@ export default {};
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    min-height: 5vh;
+    height: inherit;
     min-width: 100%;
     background-color: #181818;
     border-bottom: 1px solid #2b2b2b;

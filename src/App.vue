@@ -5,7 +5,7 @@ export default {};
 
 <template>
   <div class="container-fluid">
-    <div class="row">
+    <div class="header">
       <portfolio-header></portfolio-header>
     </div>
     <div class="row section">
@@ -20,13 +20,42 @@ export default {};
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&display=swap');
-.container-fluid {
-  font-family: 'Fira Code' !important;
-  min-width: 100vw;
+html {
+  height: 100%;
+  widows: 100%;
+  margin: 0;
+  padding: 0;
 }
 
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.container-fluid {
+  font-family: 'Fira Code' !important;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-height: 45px;
+  height: 45px;
+  z-index: 999;
+}
 .section {
-  min-height: 94vh;
-  min-width: 100vw;
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  top: 45px;
+  left: 0;
+  height: calc(100% - 45px);
 }
 </style>
