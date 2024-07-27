@@ -14,7 +14,7 @@ export default {
 
 <style scoped>
 .line-number-wrap {
-    max-height: 90vh;
+    max-height: 100%;
     min-width: 40px;
     overflow: hidden;
     padding: 5px 0 0 10px;

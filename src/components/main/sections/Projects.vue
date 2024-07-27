@@ -32,7 +32,7 @@ export default {
                     image: "/images/mental-health-app.png",
                     redirect: "https://github.com/joshy-joy/Employee-Treatment-prediction",
                     tags: ['python']
-                }
+                },
             ],
         }
     },
@@ -41,24 +41,27 @@ export default {
 
 <template>
     <div class="container">
-        <div class="card-wrap" :key="project.id" v-for="project in projects">
-            <p class="project-comment">
-                <span class="code-blue">Project 1 </span>
-                <span class="code-comments">// {{ project.name }}</span>
-            </p>
-            <div class="card">
-                <div class="card-img-wrap">
-                    <img :src="project.image" class="card-img-top" alt="...">
-                </div>
-                <div class="card-body">
-                    <div class="card-title-wrap">
-                        <h5 class="card-title">{{ project.name }}</h5>
-                        <span :class="['badge', project.status === 'completed' ? 'completed' : 'in-progress']">
-                            {{ project.status }}
-                        </span>
+        <line-number></line-number>
+        <div class="card-container">
+            <div class="card-wrap" :key="project.id" v-for="project in projects">
+                <p class="project-comment">
+                    <span class="code-blue">Project 1 </span>
+                    <span class="code-comments">// {{ project.name }}</span>
+                </p>
+                <div class="card">
+                    <div class="card-img-wrap">
+                        <img :src="project.image" class="card-img-top" alt="...">
                     </div>
-                    <p class="card-text code-comments">{{ project.description }}</p>
-                    <a :href="project.redirect" class="btn" target="blank">view-project</a>
+                    <div class="card-body">
+                        <div class="card-title-wrap">
+                            <h5 class="card-title">{{ project.name }}</h5>
+                            <span :class="['badge', project.status === 'completed' ? 'completed' : 'in-progress']">
+                                {{ project.status }}
+                            </span>
+                        </div>
+                        <p class="card-text code-comments">{{ project.description }}</p>
+                        <a :href="project.redirect" class="btn" target="_blank">view-project</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -68,11 +71,21 @@ export default {
 <style scoped>
 .container {
     display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    min-width: 100%;
+    height: 100%;
+    color: #ffff;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.card-container {
+    display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
     height: 100%;
-    color: #ffff;
 }
 
 .project-comment {
@@ -83,12 +96,12 @@ export default {
 .card {
     height: 300px;
     min-width: 300px;
+    max-width: 300px;
     border-radius: 15px 15px;
     overflow: hidden;
     background: #181818;
     border: 1px solid #2b2b2b;
     margin: 10px;
-    float: left;
 }
 
 .card-img-wrap {
@@ -173,6 +186,11 @@ export default {
     animation-name: hide;
 }
 
+.btn:hover {
+    text-decoration: none;
+    color: #ffff;
+}
+
 .card:hover > .card-body > .card-text {
   animation: 1s forwards;
   animation-name: show;
@@ -199,9 +217,9 @@ export default {
     to {opacity: 0;}
 }
 
- /*media query for screen width less than 1000px */
- @media all and (max-width: 1300px) {
-    .container {
+ /*media query for screen width less than 1300px */
+ @media all and (max-width: 1350px) {
+    .card-container  {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -221,5 +239,19 @@ export default {
     }
 }
 
+ /*media query for screen width less than 1300px */
+ @media all and (min-width: 1500px) {
+    .card {
+        height: 300px;
+        min-width: 300px;
+        max-width: 500px;
+        border-radius: 15px 15px;
+        overflow: hidden;
+        background: #181818;
+        border: 1px solid #2b2b2b;
+        margin: 10px;
+        float: left;
+    }
+}
 
 </style>
