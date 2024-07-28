@@ -20,21 +20,21 @@ export default {
 </script>
 
 <template>
-    <div class="col-sm-9 content">
+    <div class="col-sm-10 content">
         <div class="tabs-view">
             <tab-view></tab-view>
         </div>
         <div class="section-view">
             <!-- <home></home> -->
-            <!-- <about></about> -->
+            <about></about>
             <!-- <projects></projects>   -->
-             <contact></contact>
+             <!-- <contact></contact> -->
         </div>
     </div>
 </template>
 
 <style scoped>
-.col-sm-9 {
+.col-sm-10 {
     padding: 0 !important;
     margin: 0 !important;
 }
