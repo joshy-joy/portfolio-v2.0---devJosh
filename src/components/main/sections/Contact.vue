@@ -55,7 +55,7 @@ export default {
             this.resetFrom()
             this.isSubmited = false;
         }
-    }
+    },
 };
 </script>
 
@@ -166,6 +166,7 @@ export default {
 }
 
 .contact-form {
+    min-width: 260px;
     width: 80%;
 }
 
@@ -189,6 +190,13 @@ export default {
 
 .code-section p {
     margin: 0;
+}
+
+/*media query for screen width less than 1000px */
+@media all and (max-width: 973px) {
+    .col {
+        margin: 10px 0px;
+    }
 }
 
 </style>
