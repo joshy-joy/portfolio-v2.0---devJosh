@@ -6,7 +6,6 @@ import Projects from './sections/Projects.vue'
 import Blogs from './sections/Blogs.vue'
 import Contact from './sections/Contact.vue'
 import TabView from '../commons/TabView.vue'
-import TheLineNumber from '../commons/TheLineNumber.vue'
 
 export default {
     components : {
