@@ -1,4 +1,7 @@
 <script lang="ts">
+
+const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default {
     data() {
         return {
@@ -6,7 +9,27 @@ export default {
             email: "",
             message: "",
             isSubmited: false,
+            isNameEmpty: false,
+            isInvalidEmail: false,
+            isMessageEmpty: false,
         }
+    },
+    watch:{
+        name() {
+            if(this.name !== "") {
+                this.isNameEmpty = false;
+            }
+        },
+        email() {
+            if(this.email !== "" && regex.test(this.email)) {
+                this.isInvalidEmail = false
+            }
+        },
+        message() {
+            if(this.message !== "") {
+                this.isMessageEmpty = false;
+            }
+        },
     },
     methods: {
         resetFrom() {
@@ -15,9 +38,21 @@ export default {
             this.message= "";
         },
         sendMessage() {
-            this.isSubmited = true;
+            if(this.name === "") {
+                this.isNameEmpty = true;
+            }
+            if(this.message === "") {
+                this.isMessageEmpty = true;
+            }
+            if(this.email === "" || !regex.test(this.email)) {
+                this.isInvalidEmail = true
+            }
+            if(!this.isNameEmpty && !this.isMessageEmpty && !this.isInvalidEmail) {
+                this.isSubmited = true;
+            }
         },
         sendNewMessage() {
+            this.resetFrom()
             this.isSubmited = false;
         }
     }
@@ -32,15 +67,18 @@ export default {
                     <div class="mb-3">
                         <label for="name" class="form-label">_name:</label>
                         <input type="text" class="form-control" id="name" placeholder="joshy joy" v-model="name">
+                        <p class="code-error" v-if="isNameEmpty">error: name cannot be empty</p>
                     </div>
                     <div class="mb-3">
                         <label for="email" class="form-label">_email:</label>
                         <input type="email" class="form-control" id="email" v-model="email" aria-describedby="emailHelp" placeholder="joshy-joy@gmail.com">
+                        <p class="code-error" v-if="isInvalidEmail">error: invalid email</p>
                     </div>
                     <div class="mb-3">
                         <label for="message" class="form-label">_message:</label>
                         <textarea class="form-control" id="message" rows="3" 
                         placeholder="Hey! Just checked your website and it looks awesome!" v-model="message"></textarea>
+                        <p class="code-error" v-if="isMessageEmpty">error: message cannot be empty</p>
                     </div>
                     <div class="form-control-btn">
                         <button type="submit" class="btn btn-primary" @click.prevent="sendMessage()">

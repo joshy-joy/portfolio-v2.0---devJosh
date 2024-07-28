@@ -30,6 +30,10 @@
     color: #ffa656;
 }
 
+.code-error {
+    color: #ff6465;
+}
+
 /* intentation style */
 .intent-L1 {
     margin-left: 20px !important;
