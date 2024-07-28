@@ -43,4 +43,12 @@
     background: #0279cb;
     border-radius: 0;
     color: white;
+    cursor: pointer;
+}
+
+.btn-gray {
+    background: #1c2b3a;
+    border-radius: 0;
+    color: white;
+    cursor: pointer;
 }
