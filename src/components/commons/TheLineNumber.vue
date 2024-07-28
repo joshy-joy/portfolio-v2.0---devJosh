@@ -1,13 +1,26 @@
 <script lang="ts">
 export default {
-
+    data() {
+        return {
+            defaultLineNumberCount: 100
+        }
+    },
+    props:['totalLine'],
+    computed: {
+        lineCount() {
+            if(this.totalLine <= 0) {
+                return this.defaultLineNumberCount
+            } 
+            return this.totalLine
+        },
+    },
 }; 
 </script>
 
 <template>
     <div class="line-number-wrap">
         <ul class="line-number">
-            <li class="line-number-value" v-for="index in 100" :key="index">{{ index }}</li>
+            <li class="line-number-value" v-for="index in lineCount()" :key="index">{{ index }}</li>
         </ul>
     </div>
 </template>
