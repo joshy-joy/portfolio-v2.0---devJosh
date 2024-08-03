@@ -1,4 +1,12 @@
 <script lang="ts">
+
+import eventBus from '../../consumable/eventBus';
+
+const filterTags = (project: any, filteredStack: any) => {
+    let temp = project.tags.filter((t:string) => filteredStack.includes(t));
+    return (temp.length > 0)
+}
+
 export default {
     data() {
         return {
@@ -12,7 +20,7 @@ export default {
                         status: "in-progress",
                         image: "/images/foliohub.png",
                         redirect: "",
-                        tags: ['python', 'javascript', 'vue', 'django']
+                        tags: ['python', 'javascript', 'vue', 'django', 'postgresql']
                     },
                     {
                         id:"4a05a71a-ab50-4c1d-ac08-c5b544056571",
@@ -41,7 +49,7 @@ export default {
                         status: "completed",
                         image: "/images/portfolio.png",
                         redirect: "https://github.com/joshy-joy/portfolio-v2.0---devJosh",
-                        tags: ['vue', 'golang']
+                        tags: ['vue', 'golang', 'postgresql']
                     },
                 ],
                 company: [
@@ -53,7 +61,7 @@ export default {
                         status: "On-going",
                         image: "/images/nxt.png",
                         redirect: "https://www.angelone.in/authorised-person/platform-and-tools",
-                        tags: ['python', 'golang']
+                        tags: ['python', 'golang', 'postgresql', 'sql server']
                     },
                     {
                         id:"d3487a12-b00a-4ce8-bef0-af8cabfd0408",
@@ -63,22 +71,33 @@ export default {
                         status: "On-going",
                         image: "/images/cira.png",
                         redirect: "https://www.cognicor.com/platform",
-                        tags: ['python', 'javascript', 'angular', 'flask']
+                        tags: ['python', 'javascript', 'angular', 'flask', 'mongo db']
                     },
                 ]
-            }
+            },
+            filteredProjects: {}
         }
+    },
+    beforeMount() {
+        this.filteredProjects = Object.assign({}, this.projects)
+        eventBus.on('filterProjects', (filteredStack) => {
+            this.filteredProjects = Object.assign({}, this.projects)
+            if (filteredStack.length > 0) {
+                this.filteredProjects.personal = this.projects.personal.filter((p:any) => filterTags(p, filteredStack));
+                this.filteredProjects.company = this.projects.company.filter((p:any) => filterTags(p, filteredStack));
+            }
+        });
     },
 };
 </script>
 
 <template>
     <div class="container">
-        <line-number></line-number>
+        <line-number :totalLine=50></line-number>
         <div class="card-container">
-            <p class="code-comments">// Company Projects</p>
+            <p class="code-comments" v-if="filteredProjects.company.length > 0">// Company Projects</p>
             <div class="row row-cols-3">
-                <div class="col card-wrap" :key="project.id" v-for="(project, i) in projects.company">
+                <div class="col card-wrap" :key="project.id" v-for="(project, i) in filteredProjects.company">
                     <p class="project-comment">
                         <span class="code-blue">Project {{ i+1 }} </span>
                         <span class="code-comments"> // {{ project.name }}</span>
@@ -100,9 +119,9 @@ export default {
                     </div>
                 </div>
             </div>
-            <p class="code-comments">// Personal Projects</p>
+            <p class="code-comments" v-if="filteredProjects.personal.length > 0">// Personal Projects</p>
             <div class="row row-cols-3">
-                <div class="col card-wrap" :key="project.id" v-for="(project, i) in projects.personal">
+                <div class="col card-wrap" :key="project.id" v-for="(project, i) in filteredProjects.personal">
                     <p class="project-comment">
                         <span class="code-blue">Project {{ i+1 }} </span>
                         <span class="code-comments"> // {{ project.name }}</span>

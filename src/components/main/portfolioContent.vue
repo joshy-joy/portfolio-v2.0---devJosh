@@ -26,8 +26,8 @@ export default {
         </div>
         <div class="section-view">
             <!-- <home></home> -->
-            <about></about>
-            <!-- <projects></projects>   -->
+            <!-- <about></about> -->
+            <projects></projects>  
              <!-- <contact></contact> -->
         </div>
     </div>

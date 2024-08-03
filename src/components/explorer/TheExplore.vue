@@ -1,10 +1,13 @@
 <script lang="ts">
+import { toRaw } from 'vue';
 
 import SvgIcon from '@jamescoyle/vue-icon';
 import { mdiLanguageGo } from '@mdi/js';
 import { mdiLanguagePython } from '@mdi/js';
 import { mdiFolder } from '@mdi/js';
 import { mdiLanguageJavascript } from '@mdi/js';
+
+import eventBus from '../consumable/eventBus';
 
 export default {
     components: {
@@ -16,6 +19,29 @@ export default {
             pythonIconPath: mdiLanguagePython,
             folderIconPath: mdiFolder,
             javascriptIconPath: mdiLanguageJavascript,
+
+            isProjectFolderExpanded: true,
+            selectedTechStacks: [],
+            techStacks: [
+                'Golang', 
+                'Python', 
+                'Javascript', 
+                'Angular', 
+                'Vue', 
+                'Flask', 
+                'Django', 
+                'PostgreSQL',
+                'SQL Server',
+                'Mongo DB',
+            ]
+    }
+  },
+  methods: {
+    expandProjects() {
+        this.isProjectFolderExpanded = !this.isProjectFolderExpanded;
+    },
+    filterProjects() {
+        eventBus.emit('filterProjects', this.selectedTechStacks)
     }
   },
 };
@@ -35,15 +61,31 @@ export default {
                 </div>
                 <div class="project-directory-wrap">
                     <ul class="directory-list">
-                        <li class="directory-list-item">
+                        <li class="directory-list-item" @click="expandProjects()">
                             <div class="file-item-wrap">
                                 <div class="icon-wrap">
-                                    <i class="bi bi-chevron-right"></i>
+                                    <i class="bi bi-chevron-down" v-if="isProjectFolderExpanded"></i>
+                                    <i class="bi bi-chevron-right" v-else></i>
                                     <svg-icon class="folder-icon-svg" type="mdi" :path="folderIconPath"></svg-icon>
                                 </div>
                                 <p class="file-item-name">Projects</p>
                             </div>
                         </li>
+                        <div class="projects-type-wrap" v-if="isProjectFolderExpanded">
+                            <div class="form-check" :key=tech v-for="tech in techStacks">
+                                <input 
+                                    class="form-check-input" 
+                                    type="checkbox"
+                                    name="projectFilter"
+                                    :value="tech.toLowerCase()" 
+                                    :id="tech" 
+                                    v-model="selectedTechStacks" 
+                                    @change="filterProjects()">
+                                <label class="form-check-label" for="tech">
+                                    {{ tech }}
+                                </label>
+                            </div>
+                        </div>
                         <li class="directory-list-item">
                             <div class="file-item-wrap">
                                 <svg-icon class="go-icon-svg" type="mdi" :path="goIconPath"></svg-icon>
@@ -74,9 +116,9 @@ export default {
     background-color: #181818;
     border-right: 1px solid #2b2b2b;
     height: 100%;
-    max-height: 100%;
     color: #bcbcbc;
     font-family: "Roboto", sans-serif;
+    min-width: 200px;
  }
 
  .explorer-heading-tab {
@@ -138,6 +180,32 @@ export default {
     font-size: 14px;
     font-family: "Roboto", sans-serif;
  }
+
+ .projects-type-wrap {
+    margin: 0 0 0 45px;
+ }
+
+ input[type="checkbox"] {
+  box-sizing: border-box;
+  padding: 0;
+  accent-color: #5f7b97;
+  border: 1px solid #2b2b2b;
+}
+
+.form-check {
+    margin: 0;
+}
+
+.form-check:hover {
+    background: #37373e;
+ }
+
+.form-check-label {
+    font-size: 14px;
+    margin: 0;
+    padding: 0 0 0 10px;
+    cursor: pointer;
+}
 
 .go-icon-svg {
     color: #519aba;
