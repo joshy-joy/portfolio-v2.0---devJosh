@@ -37,8 +37,11 @@ export default {
     }
   },
   methods: {
-    expandProjects() {
-        this.isProjectFolderExpanded = !this.isProjectFolderExpanded;
+    openTab(tabName: string, path: string) {
+        if (tabName === 'projects') {
+            this.isProjectFolderExpanded = !this.isProjectFolderExpanded;
+        }
+        eventBus.emit('openTab', tabName, path)
     },
     filterProjects() {
         eventBus.emit('filterProjects', this.selectedTechStacks)
@@ -61,7 +64,7 @@ export default {
                 </div>
                 <div class="project-directory-wrap">
                     <ul class="directory-list">
-                        <li class="directory-list-item" @click="expandProjects()">
+                        <li class="directory-list-item" @click="openTab('projects', '/projects')">
                             <div class="file-item-wrap">
                                 <div class="icon-wrap">
                                     <i class="bi bi-chevron-down" v-if="isProjectFolderExpanded"></i>
@@ -88,7 +91,7 @@ export default {
                                 </label>
                             </div>
                         </div>
-                        <li class="directory-list-item">
+                        <li class="directory-list-item" @click="openTab('Home.go', '')">
                             <div class="file-item-wrap">
                                 <svg-icon class="go-icon-svg" type="mdi" :path="goIconPath"></svg-icon>
                                 <p class="file-item-name">
@@ -96,7 +99,7 @@ export default {
                                 </p>
                             </div>
                         </li>
-                        <li class="directory-list-item">
+                        <li class="directory-list-item" @click="openTab('About.py', '/about')"> 
                             <div class="file-item-wrap">
                                 <svg-icon class="python-icon-svg" type="mdi" :path="pythonIconPath"></svg-icon>
                                 <p class="file-item-name">
@@ -104,7 +107,7 @@ export default {
                                 </p>
                             </div>
                         </li>
-                        <li class="directory-list-item">
+                        <li class="directory-list-item" @click="openTab('Contact.js', '/contact')">
                             <div class="file-item-wrap">
                                 <svg-icon class="js-icon-svg" type="mdi" :path="javascriptIconPath"></svg-icon>
                                 <p class="file-item-name">
@@ -187,6 +190,11 @@ export default {
     padding: 0 0 0 15px;
     font-size: 14px;
     font-family: "Roboto", sans-serif;
+ }
+
+ .file-item-name a {
+    text-decoration: none;
+    color: #bcbcbc;
  }
 
  .projects-type-wrap {

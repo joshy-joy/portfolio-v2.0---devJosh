@@ -6,7 +6,7 @@ export default {
 <template>
     <div class="row">
         <div class="col-sm-12">
-            <line-number></line-number>
+            <line-number :totalLine=50 ></line-number>
             <div class="content-wrap">
                 <div class="about-code-wrap">
                     <p> ## * * * About me * * *<br>

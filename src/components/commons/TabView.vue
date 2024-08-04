@@ -1,19 +1,54 @@
 <script lang="ts">
+import eventBus from '../consumable/eventBus';
+
+const diactivate = (tab) => { tab.isActive=false }
+const getTabIndex = (tabs, term) => tabs.findIndex( tab => tab.tabName.toLowerCase() === term.toLowerCase())
+
 export default {
-    methods: {
-         closeTab() {
-            console.log("close")
+    data() {
+        return {
+            tabs : [
+                {tabName: "Home.go", path:"/", isActive: true}
+            ],
         }
-    }
+    },
+    methods: {
+        selectTab(name) {
+            let index = getTabIndex(this.tabs, name);
+            this.tabs.forEach(diactivate);
+            this.tabs[index].isActive = true;
+        },
+         closeTab(name) {
+            if(name !== "Home.go") {
+                let index = getTabIndex(this.tabs, name);
+                if(this.tabs[index].isActive) {
+                    this.tabs[index-1].isActive = true;
+                    this.$router.push(this.tabs[index-1].path);
+                }
+                this.tabs.splice(index, 1)
+            }
+        },
+    },
+    mounted() {
+        eventBus.on('openTab', (tabName: string, path: string) => {
+            let index = getTabIndex(this.tabs, tabName);
+            this.tabs.forEach(diactivate);
+            if(index >= 0 ) { 
+                this.tabs[index].isActive = true;
+            } else {
+                this.tabs.push({tabName: tabName, path: path, isActive: true});
+            }
+        });
+    },
 }; 
 
 </script>
 
 <template>
     <div class="tab-wrap">
-        <div class="tab-section">
-            <p>home.py</p>
-            <button class="close-btn" @click="closeTab()"><span>x</span></button>
+        <div :class="{'tab-section': true, 'activeTab': tab.isActive }" :key="tab.tabName" v-for="tab in tabs">
+            <router-link :to="tab.path" @click="selectTab(tab.tabName)">{{ tab.tabName }}</router-link>
+            <button class="close-btn" @click="closeTab(tab.tabName)" v-if="tab.tabName != 'Home.go'"><span>x</span></button>
         </div>
     </div>
 </template>
@@ -40,9 +75,19 @@ export default {
     cursor:pointer;
 }
 
-.tab-section p {
+.tab-section a {
     padding: 2px 20px;
     margin: 0 !important;
+    text-decoration: none;
+    color: #eeeeee;
+    font-size: 14px;
+    font-family: "Roboto", sans-serif;
+}
+
+.activeTab {
+    background: #1f1f1f;
+    border-bottom: 0;
+    height: 105%;
 }
 
 .close-btn {
@@ -51,6 +96,11 @@ export default {
     padding: 2px 10px 2px 10px;
     color: inherit;
     cursor: pointer;
+}
+
+.close-btn span {
+    font-size: 12px;
+    padding: 2px;
 }
 
 .close-btn:focus {
