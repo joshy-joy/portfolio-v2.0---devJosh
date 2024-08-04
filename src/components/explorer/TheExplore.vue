@@ -244,7 +244,7 @@ export default {
 
   /*media query for screen width less than 1000px */
 @media all and (max-width: 574px) {
-    .col-sm-3 {
+    .col-sm-2 {
         display: none;
     }
 }

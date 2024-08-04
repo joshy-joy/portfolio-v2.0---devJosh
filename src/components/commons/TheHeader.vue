@@ -13,6 +13,11 @@ export default {};
             <!-- <input type="text" placeholder="search"/> -->
              <p>@joshy_joy</p>
         </div>
+        <div class="menu">
+            <button class="btn">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
     </div>
 </template>
 
@@ -29,7 +34,7 @@ export default {};
 }
 
 .search-bar {
-    min-width: calc(100% - 50px);
+    min-width: calc(100% - 100px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -73,9 +78,30 @@ export default {};
     width: 25px;
 }
 
+.menu .btn {
+    background: #181818;
+    border: none;
+    outline: none;
+    text-align: center;
+    display: none;
+}
+
+.btn:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+i::before {
+    color: #ffff;
+    font-size: 15px;
+}
+
 @media all and (max-width: 573px) {
     .search-bar input {
-    width: 200px;
-}
+        width: 200px;
+    }
+    .menu .btn {
+        display: block;
+    }
 }
 </style>

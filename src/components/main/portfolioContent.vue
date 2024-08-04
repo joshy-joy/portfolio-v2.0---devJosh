@@ -10,7 +10,7 @@ export default {
 </script>
 
 <template>
-    <div class="col-sm-10 content">
+    <div class="col-sm content">
         <div class="tabs-view">
             <tab-view></tab-view>
         </div>
@@ -21,7 +21,7 @@ export default {
 </template>
 
 <style scoped>
-.col-sm-10 {
+.col-sm {
     padding: 0 !important;
     margin: 0 !important;
 }
