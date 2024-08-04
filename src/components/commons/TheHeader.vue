@@ -10,7 +10,8 @@ export default {};
             <img src="/images/logo.png" alt="">
         </div>
         <div class="search-bar">
-            <input type="text" placeholder="search"/>
+            <!-- <input type="text" placeholder="search"/> -->
+             <p>@joshy_joy</p>
         </div>
     </div>
 </template>
@@ -55,8 +56,17 @@ export default {};
     border: 1px solid #0279CB;
 }
 
+.search-bar p {
+    color: #ffff;
+    font-family: 'Fira Code';
+    margin: 0;
+    font-size: 20px;
+    letter-spacing: 6px;
+    font-weight: 700;
+}
+
 .logo {
-    margin: 0 0 0 5px;
+    margin: 0 0 0 20px;
 }
 
 .logo img {
