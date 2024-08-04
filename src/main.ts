@@ -5,6 +5,8 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 import './assets/css/common.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
+import router from './routes'
+
 import ThePortfolioMain from './components/main/portfolioContent.vue'
 import ThePortfolioFooter from './components/commons/ThePortfolioFooter.vue'
 import TheExplorer from './components/explorer/TheExplore.vue'
@@ -19,5 +21,7 @@ app.component('portfolio-footer', ThePortfolioFooter)
 app.component('side-menu', TheExplorer)
 app.component('portfolio-header', TheHeader)
 app.component('line-number', TheLineNumber)
+
+app.use(router)
 
 app.mount('#app')

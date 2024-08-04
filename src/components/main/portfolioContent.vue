@@ -1,19 +1,9 @@
 <script lang="ts">
 
-import Home from './sections/Home.vue'
-import About from './sections/About.vue'
-import Projects from './sections/Projects.vue'
-import Blogs from './sections/Blogs.vue'
-import Contact from './sections/Contact.vue'
 import TabView from '../commons/TabView.vue'
 
 export default {
     components : {
-        'home': Home,
-        'about': About,
-        'projects': Projects,
-        'blogs': Blogs,
-        'contact': Contact,
         'tab-view': TabView,
     },
 };
@@ -25,10 +15,7 @@ export default {
             <tab-view></tab-view>
         </div>
         <div class="section-view">
-            <!-- <home></home> -->
-            <!-- <about></about> -->
-            <projects></projects>  
-             <!-- <contact></contact> -->
+            <router-view></router-view>
         </div>
     </div>
 </template>

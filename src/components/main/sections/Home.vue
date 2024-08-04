@@ -13,7 +13,7 @@ export default {
 <template>
     <div class="row">
         <div class="col-sm-12">
-            <line-number></line-number>
+            <line-number :totalLine=50></line-number>
             <div class="container">
                 <div class="home-content-wrap">
                     <div class="personal-details-wrap">

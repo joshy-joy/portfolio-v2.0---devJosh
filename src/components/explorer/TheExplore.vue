@@ -68,7 +68,9 @@ export default {
                                     <i class="bi bi-chevron-right" v-else></i>
                                     <svg-icon class="folder-icon-svg" type="mdi" :path="folderIconPath"></svg-icon>
                                 </div>
-                                <p class="file-item-name">Projects</p>
+                                <p class="file-item-name">
+                                    <router-link to="/projects">Projects</router-link>
+                                </p>
                             </div>
                         </li>
                         <div class="projects-type-wrap" v-if="isProjectFolderExpanded">
@@ -89,19 +91,25 @@ export default {
                         <li class="directory-list-item">
                             <div class="file-item-wrap">
                                 <svg-icon class="go-icon-svg" type="mdi" :path="goIconPath"></svg-icon>
-                                <p class="file-item-name">Home.go</p>
+                                <p class="file-item-name">
+                                    <router-link to="/">Home.go</router-link>
+                                </p>
                             </div>
                         </li>
                         <li class="directory-list-item">
                             <div class="file-item-wrap">
                                 <svg-icon class="python-icon-svg" type="mdi" :path="pythonIconPath"></svg-icon>
-                                <p class="file-item-name">About.py</p>
+                                <p class="file-item-name">
+                                    <router-link to="/about">About.py</router-link>
+                                </p>
                             </div>
                         </li>
                         <li class="directory-list-item">
                             <div class="file-item-wrap">
                                 <svg-icon class="js-icon-svg" type="mdi" :path="javascriptIconPath"></svg-icon>
-                                <p class="file-item-name">Contact.js</p>
+                                <p class="file-item-name">
+                                    <router-link to="/contact">Contact.js</router-link>
+                                </p>
                             </div>
                         </li>
                     </ul>
