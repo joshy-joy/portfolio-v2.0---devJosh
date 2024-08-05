@@ -48,7 +48,7 @@ export default {
     <div class="tab-wrap">
         <div :class="{'tab-section': true, 'activeTab': tab.isActive }" :key="tab.tabName" v-for="tab in tabs">
             <router-link :to="tab.path" @click="selectTab(tab.tabName)">{{ tab.tabName }}</router-link>
-            <button class="close-btn" @click="closeTab(tab.tabName)" v-if="tab.tabName != 'Home.go'"><span>x</span></button>
+            <button class="close-btn" @click="closeTab(tab.tabName)" v-if="tab.tabName != 'Home.go'"><i class="bi bi-x"></i></button>
         </div>
     </div>
 </template>
@@ -98,9 +98,8 @@ export default {
     cursor: pointer;
 }
 
-.close-btn span {
-    font-size: 12px;
-    padding: 2px;
+.close-btn i {
+    color: #ffff;
 }
 
 .close-btn:focus {

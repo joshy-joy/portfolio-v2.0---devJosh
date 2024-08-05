@@ -1,11 +1,17 @@
 <script lang="ts">
 
 import TabView from '../commons/TabView.vue'
+import eventBus from '../consumable/eventBus';
 
 export default {
     components : {
         'tab-view': TabView,
     },
+    methods: {
+        closeExplorer() {
+            eventBus.emit('closeExplorer', false);
+        },
+  },
 };
 </script>
 
@@ -14,7 +20,7 @@ export default {
         <div class="tabs-view">
             <tab-view></tab-view>
         </div>
-        <div class="section-view">
+        <div class="section-view" @click="closeExplorer()">
             <router-view></router-view>
         </div>
     </div>

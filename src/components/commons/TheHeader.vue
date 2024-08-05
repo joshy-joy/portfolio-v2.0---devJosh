@@ -1,7 +1,23 @@
 <script lang="ts">
-import { defineComponent } from 'vue'
 
-export default {};
+import eventBus from '../consumable/eventBus';
+
+export default {
+    data() {
+        return {
+            isExplorerOpened: false,
+        }
+    },
+    methods: {
+        explorerVisibilityHandler() {
+            this.isExplorerOpened = !this.isExplorerOpened;
+            eventBus.emit('openExplorer', this.isExplorerOpened);
+        },
+    },
+    mounted() {
+        eventBus.on('closeExplorer', (data: boolean) => {this.isExplorerOpened = data;});
+    },
+};
 </script>
 
 <template>
@@ -14,8 +30,9 @@ export default {};
              <p>@joshy_joy</p>
         </div>
         <div class="menu">
-            <button class="btn">
-                <i class="bi bi-list"></i>
+            <button class="btn" @click="explorerVisibilityHandler()">
+                <i class="bi bi-x-lg" v-if="this.isExplorerOpened"></i>
+                <i class="bi bi-list" v-else></i>
             </button>
         </div>
     </div>
@@ -102,6 +119,7 @@ i::before {
     }
     .menu .btn {
         display: block;
+        cursor: pointer;
     }
 }
 </style>

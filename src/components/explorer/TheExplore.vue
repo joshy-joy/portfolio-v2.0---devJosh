@@ -20,7 +20,8 @@ export default {
             folderIconPath: mdiFolder,
             javascriptIconPath: mdiLanguageJavascript,
 
-            isProjectFolderExpanded: true,
+            isProjectFolderExpanded: false,
+            showExplorer: false,
             selectedTechStacks: [],
             techStacks: [
                 'Golang', 
@@ -47,11 +48,15 @@ export default {
         eventBus.emit('filterProjects', this.selectedTechStacks)
     }
   },
+  mounted() {
+    eventBus.on('openExplorer', (data: boolean) => {this.showExplorer = data});
+    eventBus.on('closeExplorer', (data: boolean) => {this.showExplorer = data;});
+  },
 };
 </script>
 
 <template>
-    <div class="col-sm-2">
+    <div class="col-sm-2" :class="{'show-explorer': showExplorer, 'hide-explorer': !showExplorer}">
         <div class="container-fluid">
             <div class="explorer-heading-tab">
                     <i class="bi"> </i>
@@ -126,10 +131,10 @@ export default {
  .col-sm-2 {
     background-color: #181818;
     border-right: 1px solid #2b2b2b;
-    height: 100%;
     color: #bcbcbc;
     font-family: "Roboto", sans-serif;
-    min-width: 200px;
+    min-width: 220px;
+    height: 100%;
  }
 
  .explorer-heading-tab {
@@ -243,9 +248,36 @@ export default {
 }
 
   /*media query for screen width less than 1000px */
-@media all and (max-width: 574px) {
-    .col-sm-2 {
-        display: none;
+@media all and (max-width: 577px) {  
+    .show-explorer {
+        width: 220px;
+        position: fixed;
+        top: 45px;
+        left: 0px;
+        z-index: 999;
+        animation: 0.5s forwards;
+        animation-name: show;
     }
+
+    .hide-explorer {
+        width: 220px;
+        position: fixed;
+        top: 45px;
+        left: -220px;
+        z-index: 999;
+        animation: 0.5s forwards;
+        animation-name: hide;
+    }
+
+    @keyframes show {
+        from {left: -220px;}
+        to {left: 0px;}
+    }
+
+    @keyframes hide {
+        from {left: 0px;}
+        to {left: -220px;}
+    }
+
 }
 </style>
