@@ -22,18 +22,18 @@ export default {
 
 <template>
     <div class="header">
-        <div class="logo">
-            <img src="/images/logo.png" alt="">
-        </div>
-        <div class="search-bar">
-            <!-- <input type="text" placeholder="search"/> -->
-             <p>@joshy_joy</p>
-        </div>
         <div class="menu">
             <button class="btn" @click="explorerVisibilityHandler()">
                 <i class="bi bi-x-lg" v-if="this.isExplorerOpened"></i>
                 <i class="bi bi-list" v-else></i>
             </button>
+        </div>
+        <div class="search-bar">
+            <!-- <input type="text" placeholder="search"/> -->
+            <div class="logo">
+                <img src="/images/logo.png" alt="">
+            </div>
+             <p>joshy_joy</p>
         </div>
     </div>
 </template>
@@ -81,14 +81,14 @@ export default {
 .search-bar p {
     color: #ffff;
     font-family: 'Fira Code';
-    margin: 0;
+    margin: 0 0 5px 0;;
     font-size: 20px;
     letter-spacing: 6px;
     font-weight: 700;
 }
 
 .logo {
-    margin: 0 0 0 20px;
+    margin: 0 5px;
 }
 
 .logo img {
@@ -113,7 +113,7 @@ i::before {
     font-size: 15px;
 }
 
-@media all and (max-width: 573px) {
+@media all and (max-width: 641px) {
     .search-bar input {
         width: 200px;
     }

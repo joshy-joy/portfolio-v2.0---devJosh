@@ -248,7 +248,7 @@ export default {
 }
 
   /*media query for screen width less than 1000px */
-@media all and (max-width: 577px) {  
+@media all and (max-width: 641px) {  
     .show-explorer {
         width: 220px;
         position: fixed;
