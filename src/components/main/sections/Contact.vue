@@ -207,6 +207,12 @@ export default {
     .contact-form{
         max-width: 500px;
     }
+    .contact-code-wrap {
+        padding: 0;
+    }
+    .code-section {
+        max-width: 350px;
+    }
 }
 
 </style>

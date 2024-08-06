@@ -73,6 +73,7 @@ export default {
 @media all and (max-width: 1350px) {
     .section-view {
         overflow-y: scroll;
+        overflow-x: hidden;
     }
 }
 
