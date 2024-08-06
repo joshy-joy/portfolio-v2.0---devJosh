@@ -60,7 +60,7 @@ export default {
 </script>
 
 <template>
-    <div class="container code-comments">
+    <div class="container-fluid code-comments">
         <div class="row row-cols-2">
             <div class="col contact-view-wrap">
                 <form class="contact-form" v-if="!isSubmited">
@@ -146,7 +146,7 @@ export default {
 </template>
 
 <style scoped>
-.container {
+.container-fluid {
     width: 100%;
     height: 100%;
 }
@@ -159,6 +159,7 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
+    min-width: 450px;
 }
 
 .contact-view-wrap {
@@ -193,9 +194,18 @@ export default {
 }
 
 /*media query for screen width less than 1000px */
-@media all and (max-width: 973px) {
+@media all and (max-width: 1132px) {
     .col {
-        margin: 10px 0px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 100%;
+    }
+    .contact-view-wrap{
+        border: none;
+    }
+    .contact-form{
+        max-width: 500px;
     }
 }
 
