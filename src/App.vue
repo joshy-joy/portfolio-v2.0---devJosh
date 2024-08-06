@@ -1,85 +1,72 @@
-<script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+<script lang="ts">
+export default {};
+
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+  <div class="container-fluid">
+    <div class="header">
+      <portfolio-header></portfolio-header>
     </div>
-  </header>
-
-  <RouterView />
+    <div class="row section">
+      <side-menu></side-menu>
+      <portfolio-content></portfolio-content>
+    </div>
+    <div class="footer">
+      <portfolio-footer></portfolio-footer>
+    </div>
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Nanum+Gothic&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+html {
+  height: 100%;
+  widows: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
+body {
   width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
+.container-fluid {
+  font-family: 'Fira Code' !important;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-height: 45px;
+  height: 45px;
+  z-index: 999;
+}
+.section {
+  position: fixed;
+  margin: 0 !important;
+  padding: 0 !important;
+  top: 45px;
+  left: 0;
+  height: calc(100% - 70px);
+  width: 100%;
 }
 
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 25px;
+    width: 100%;
+    background-color: #0279CB;
 }
 </style>

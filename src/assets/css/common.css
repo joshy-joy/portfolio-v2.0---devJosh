@@ -1,0 +1,58 @@
+.link {
+    text-decoration: none !important;
+}
+
+.link:hover {
+    text-decoration: none !important;
+}
+
+.code-blue {
+    color: #4D5BCE !important;
+}
+
+.code-comments {
+    color: #607B96 !important;
+}
+
+.code-green {
+    color: #2a907b !important;
+}
+
+.code-orange {
+    color: #e99287 !important;
+}
+
+.code-violet {
+    color: #9f70b6;
+}
+
+.code-yellow {
+    color: #ffa656;
+}
+
+.code-error {
+    color: #ff6465;
+}
+
+/* intentation style */
+.intent-L1 {
+    margin-left: 20px !important;
+}
+
+.intent-L2 {
+    margin-left: 40px !important;
+}
+
+.btn {
+    background: #0279cb;
+    border-radius: 0;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-gray {
+    background: #1c2b3a;
+    border-radius: 0;
+    color: white;
+    cursor: pointer;
+}

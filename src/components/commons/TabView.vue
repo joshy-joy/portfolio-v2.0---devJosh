@@ -1,0 +1,110 @@
+<script lang="ts">
+import eventBus from '../consumable/eventBus';
+
+const diactivate = (tab) => { tab.isActive=false }
+const getTabIndex = (tabs, term) => tabs.findIndex( tab => tab.tabName.toLowerCase() === term.toLowerCase())
+
+export default {
+    data() {
+        return {
+            tabs : [
+                {tabName: "Home.go", path:"/", isActive: true}
+            ],
+        }
+    },
+    methods: {
+        selectTab(name) {
+            let index = getTabIndex(this.tabs, name);
+            this.tabs.forEach(diactivate);
+            this.tabs[index].isActive = true;
+        },
+         closeTab(name) {
+            if(name !== "Home.go") {
+                let index = getTabIndex(this.tabs, name);
+                if(this.tabs[index].isActive) {
+                    this.tabs[index-1].isActive = true;
+                    this.$router.push(this.tabs[index-1].path);
+                }
+                this.tabs.splice(index, 1)
+            }
+        },
+    },
+    mounted() {
+        eventBus.on('openTab', (tabName: string, path: string) => {
+            let index = getTabIndex(this.tabs, tabName);
+            this.tabs.forEach(diactivate);
+            if(index >= 0 ) { 
+                this.tabs[index].isActive = true;
+            } else {
+                this.tabs.push({tabName: tabName, path: path, isActive: true});
+            }
+        });
+    },
+}; 
+
+</script>
+
+<template>
+    <div class="tab-wrap">
+        <div :class="{'tab-section': true, 'activeTab': tab.isActive }" :key="tab.tabName" v-for="tab in tabs">
+            <router-link :to="tab.path" @click="selectTab(tab.tabName)">{{ tab.tabName }}</router-link>
+            <button class="close-btn" @click="closeTab(tab.tabName)" v-if="tab.tabName != 'Home.go'"><i class="bi bi-x"></i></button>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.tab-wrap {
+    width: 100%;
+    height: 30px;
+    background: #181818;
+    color: #7e7e7e;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-bottom: 1px solid #2b2b2b;
+}
+
+.tab-section {
+    height: 100%;
+    text-align: center;
+    border-right: 1px solid #2b2b2b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor:pointer;
+}
+
+.tab-section a {
+    padding: 2px 20px;
+    margin: 0 !important;
+    text-decoration: none;
+    color: #eeeeee;
+    font-size: 14px;
+    font-family: "Roboto", sans-serif;
+}
+
+.activeTab {
+    background: #1f1f1f;
+    border-bottom: 0;
+    height: 105%;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    padding: 2px 10px 2px 10px;
+    color: inherit;
+    cursor: pointer;
+}
+
+.close-btn i {
+    color: #ffff;
+}
+
+.close-btn:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+</style>
