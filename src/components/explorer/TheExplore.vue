@@ -70,16 +70,18 @@ export default {
                 <div class="project-directory-wrap">
                     <ul class="directory-list">
                         <li class="directory-list-item" @click="openTab('projects', '/projects')">
-                            <div class="file-item-wrap">
-                                <div class="icon-wrap">
-                                    <i class="bi bi-chevron-down" v-if="isProjectFolderExpanded"></i>
-                                    <i class="bi bi-chevron-right" v-else></i>
-                                    <svg-icon class="folder-icon-svg" type="mdi" :path="folderIconPath"></svg-icon>
+                            <router-link to="/projects">
+                                <div class="file-item-wrap">
+                                    <div class="icon-wrap">
+                                        <i class="bi bi-chevron-down" v-if="isProjectFolderExpanded"></i>
+                                        <i class="bi bi-chevron-right" v-else></i>
+                                        <svg-icon class="folder-icon-svg" type="mdi" :path="folderIconPath"></svg-icon>
+                                    </div>
+                                    <p class="file-item-name">
+                                        Projects
+                                    </p>
                                 </div>
-                                <p class="file-item-name">
-                                    <router-link to="/projects">Projects</router-link>
-                                </p>
-                            </div>
+                            </router-link>
                         </li>
                         <div class="projects-type-wrap" v-if="isProjectFolderExpanded">
                             <div class="form-check" :key=tech v-for="tech in techStacks">
@@ -97,28 +99,34 @@ export default {
                             </div>
                         </div>
                         <li class="directory-list-item" @click="openTab('Home.go', '')">
-                            <div class="file-item-wrap">
-                                <svg-icon class="go-icon-svg" type="mdi" :path="goIconPath"></svg-icon>
-                                <p class="file-item-name">
-                                    <router-link to="/">Home.go</router-link>
-                                </p>
-                            </div>
+                            <router-link to="/">
+                                <div class="file-item-wrap">
+                                    <svg-icon class="go-icon-svg" type="mdi" :path="goIconPath"></svg-icon>
+                                    <p class="file-item-name">
+                                        Home.go
+                                    </p>
+                                </div>
+                            </router-link>
                         </li>
                         <li class="directory-list-item" @click="openTab('About.py', '/about')"> 
-                            <div class="file-item-wrap">
-                                <svg-icon class="python-icon-svg" type="mdi" :path="pythonIconPath"></svg-icon>
-                                <p class="file-item-name">
-                                    <router-link to="/about">About.py</router-link>
-                                </p>
-                            </div>
+                            <router-link to="/about">
+                                <div class="file-item-wrap">
+                                    <svg-icon class="python-icon-svg" type="mdi" :path="pythonIconPath"></svg-icon>
+                                    <p class="file-item-name">
+                                        About.py
+                                    </p>
+                                </div>
+                            </router-link>
                         </li>
                         <li class="directory-list-item" @click="openTab('Contact.js', '/contact')">
-                            <div class="file-item-wrap">
-                                <svg-icon class="js-icon-svg" type="mdi" :path="javascriptIconPath"></svg-icon>
-                                <p class="file-item-name">
-                                    <router-link to="/contact">Contact.js</router-link>
-                                </p>
-                            </div>
+                            <router-link to="/contact">
+                                <div class="file-item-wrap">
+                                    <svg-icon class="js-icon-svg" type="mdi" :path="javascriptIconPath"></svg-icon>
+                                    <p class="file-item-name">
+                                        Contact.js
+                                    </p>
+                                </div>
+                            </router-link>
                         </li>
                     </ul>
                 </div>
@@ -171,6 +179,11 @@ export default {
 
  .directory-list-item:hover {
     background: #37373e;
+ }
+
+ .directory-list-item a {
+    text-decoration: none;
+    color: #bcbcbc;
  }
 
  .file-item-wrap {
