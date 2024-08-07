@@ -1,5 +1,6 @@
 <script lang="ts">
-import { toRaw } from 'vue';
+
+import { defineComponent } from "vue";
 
 import SvgIcon from '@jamescoyle/vue-icon';
 import { mdiLanguageGo } from '@mdi/js';
@@ -9,7 +10,7 @@ import { mdiLanguageJavascript } from '@mdi/js';
 
 import eventBus from '../consumable/eventBus';
 
-export default {
+export default defineComponent({
     components: {
         SvgIcon
     },
@@ -52,7 +53,7 @@ export default {
     eventBus.on('openExplorer', (data: boolean) => {this.showExplorer = data});
     eventBus.on('closeExplorer', (data: boolean) => {this.showExplorer = data;});
   },
-};
+});
 </script>
 
 <template>

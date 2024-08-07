@@ -1,13 +1,30 @@
 <script lang="ts">
 
+import { defineComponent } from "vue";
+
 import eventBus from '../../consumable/eventBus';
 
-const filterTags = (project: any, filteredStack: any) => {
+interface Project {
+    id: string;
+    name: string;
+    description: string;
+    status: string;
+    image: string;
+    redirect: string;
+    tags: Array<string>;
+}
+
+interface ProjectList {
+    personal: Array<Project>;
+    company: Array<Project>;
+}
+
+const filterTags = (project: Project, filteredStack: Array<String>) => {
     let temp = project.tags.filter((t:string) => filteredStack.includes(t));
     return (temp.length > 0)
 }
 
-export default {
+export default defineComponent({
     data() {
         return {
              projects : {
@@ -80,15 +97,15 @@ export default {
     },
     beforeMount() {
         this.filteredProjects = Object.assign({}, this.projects)
-        eventBus.on('filterProjects', (filteredStack) => {
+        eventBus.on('filterProjects', (filteredStack: Array<String>) => {
             this.filteredProjects = Object.assign({}, this.projects)
             if (filteredStack.length > 0) {
-                this.filteredProjects.personal = this.projects.personal.filter((p:any) => filterTags(p, filteredStack));
-                this.filteredProjects.company = this.projects.company.filter((p:any) => filterTags(p, filteredStack));
+                this.filteredProjects.personal = this.projects.personal.filter((p: Project) => filterTags(p, filteredStack));
+                this.filteredProjects.company = this.projects.company.filter((p: Project) => filterTags(p, filteredStack));
             }
         });
     },
-};
+});
 </script>
 
 <template>

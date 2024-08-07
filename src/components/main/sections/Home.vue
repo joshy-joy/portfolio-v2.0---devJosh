@@ -1,12 +1,14 @@
 <script lang="ts">
 
+import { defineComponent } from "vue";
+
 import HomeCodeBlock from "./HomeCodeBlock.vue";
 
-export default {
+export default defineComponent({
     components : {
         'code-block': HomeCodeBlock
     },
-}; 
+}); 
 
 </script>
 

@@ -1,8 +1,10 @@
 <script lang="ts">
 
+import { defineComponent } from "vue";
+
 const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default {
+export default defineComponent({
     data() {
         return {
             name: "",
@@ -56,7 +58,7 @@ export default {
             this.isSubmited = false;
         }
     },
-};
+});
 </script>
 
 <template>
