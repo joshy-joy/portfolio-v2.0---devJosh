@@ -26,7 +26,7 @@ export default defineComponent({
     <div class="header">
         <div class="menu">
             <button class="btn" @click="explorerVisibilityHandler()">
-                <i class="bi bi-x-lg" v-if="this.isExplorerOpened"></i>
+                <i class="bi bi-x-lg" v-if="isExplorerOpened"></i>
                 <i class="bi bi-list" v-else></i>
             </button>
         </div>

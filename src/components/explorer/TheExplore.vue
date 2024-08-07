@@ -1,8 +1,9 @@
-<script lang="ts">
+<script>
 
 import { defineComponent } from "vue";
 
 import SvgIcon from '@jamescoyle/vue-icon';
+
 import { mdiLanguageGo } from '@mdi/js';
 import { mdiLanguagePython } from '@mdi/js';
 import { mdiFolder } from '@mdi/js';
@@ -39,7 +40,7 @@ export default defineComponent({
     }
   },
   methods: {
-    openTab(tabName: string, path: string) {
+    openTab(tabName, path) {
         if (tabName === 'projects') {
             this.isProjectFolderExpanded = !this.isProjectFolderExpanded;
         }
@@ -50,8 +51,8 @@ export default defineComponent({
     }
   },
   mounted() {
-    eventBus.on('openExplorer', (data: boolean) => {this.showExplorer = data});
-    eventBus.on('closeExplorer', (data: boolean) => {this.showExplorer = data;});
+    eventBus.on('openExplorer', (data) => {this.showExplorer = data});
+    eventBus.on('closeExplorer', (data) => {this.showExplorer = data;});
   },
 });
 </script>

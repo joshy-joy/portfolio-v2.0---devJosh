@@ -11,21 +11,33 @@ interface Project {
     status: string;
     image: string;
     redirect: string;
-    tags: Array<string>;
+    tags?: Array<string>;
 }
 
 interface ProjectList {
-    personal: Array<Project>;
-    company: Array<Project>;
+    personal?: Array<Project>;
+    company?: Array<Project>;
+}
+
+interface Data {
+    projects?: ProjectList;
+    filteredProjects: ProjectList;
+    isPersonalProjectEmpty: boolean;
+    IsCompanyProjectEmpty: boolean;
 }
 
 const filterTags = (project: Project, filteredStack: Array<String>) => {
-    let temp = project.tags.filter((t:string) => filteredStack.includes(t));
-    return (temp.length > 0)
+    if(project.tags) {
+        let temp = project.tags.filter((t:string) => filteredStack.includes(t));
+        if(temp) {
+            return (temp.length > 0)
+        }
+    }
+    return false;
 }
 
 export default defineComponent({
-    data() {
+    data(): Data {
         return {
              projects : {
                 personal: [
@@ -92,7 +104,10 @@ export default defineComponent({
                     },
                 ]
             },
-            filteredProjects: {}
+            filteredProjects: {},
+            isPersonalProjectEmpty: false,
+            IsCompanyProjectEmpty: false,
+
         }
     },
     beforeMount() {
@@ -100,8 +115,14 @@ export default defineComponent({
         eventBus.on('filterProjects', (filteredStack: Array<String>) => {
             this.filteredProjects = Object.assign({}, this.projects)
             if (filteredStack.length > 0) {
-                this.filteredProjects.personal = this.projects.personal.filter((p: Project) => filterTags(p, filteredStack));
-                this.filteredProjects.company = this.projects.company.filter((p: Project) => filterTags(p, filteredStack));
+                this.filteredProjects.personal = this.projects?.personal?.filter((p: Project) => filterTags(p, filteredStack));
+                this.filteredProjects.company = this.projects?.company?.filter((p: Project) => filterTags(p, filteredStack));
+            }
+            if (this.filteredProjects.personal) {
+                this.isPersonalProjectEmpty = this.filteredProjects?.personal?.length <= 0
+            }
+            if (this.filteredProjects.company) {
+                this.IsCompanyProjectEmpty = this.filteredProjects?.company?.length <= 0
             }
         });
     },
@@ -112,7 +133,7 @@ export default defineComponent({
     <div class="container">
         <line-number :totalLine=50></line-number>
         <div class="card-container">
-            <p class="code-comments" v-if="filteredProjects.company.length > 0">// Company Projects</p>
+            <p class="code-comments" v-if="!IsCompanyProjectEmpty">// Company Projects</p>
             <div class="row row-cols-3">
                 <div class="col card-wrap" :key="project.id" v-for="(project, i) in filteredProjects.company">
                     <p class="project-comment">
@@ -136,7 +157,7 @@ export default defineComponent({
                     </div>
                 </div>
             </div>
-            <p class="code-comments" v-if="filteredProjects.personal.length > 0">// Personal Projects</p>
+            <p class="code-comments" v-if="!isPersonalProjectEmpty">// Personal Projects</p>
             <div class="row row-cols-3">
                 <div class="col card-wrap" :key="project.id" v-for="(project, i) in filteredProjects.personal">
                     <p class="project-comment">
