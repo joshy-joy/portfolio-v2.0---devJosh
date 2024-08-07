@@ -1,9 +1,11 @@
 <script lang="ts">
 
+import { defineComponent } from "vue";
+
 import TabView from '../commons/TabView.vue'
 import eventBus from '../consumable/eventBus';
 
-export default {
+export default defineComponent({
     components : {
         'tab-view': TabView,
     },
@@ -12,7 +14,7 @@ export default {
             eventBus.emit('closeExplorer', false);
         },
   },
-};
+});
 </script>
 
 <template>

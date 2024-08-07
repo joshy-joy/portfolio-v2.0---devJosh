@@ -1,10 +1,19 @@
 <script lang="ts">
+
+import { defineComponent } from "vue";
+
 import eventBus from '../consumable/eventBus';
 
-const diactivate = (tab) => { tab.isActive=false }
-const getTabIndex = (tabs, term) => tabs.findIndex( tab => tab.tabName.toLowerCase() === term.toLowerCase())
+interface Tab {
+    tabName: string;
+    path: string;
+    isActive: boolean
+}
 
-export default {
+const diactivate = (tab: Tab) => { tab.isActive=false }
+const getTabIndex = (tabs: Array<Tab>, term: string) => tabs.findIndex( tab => tab.tabName.toLowerCase() === term.toLowerCase())
+
+export default defineComponent({
     data() {
         return {
             tabs : [
@@ -13,12 +22,12 @@ export default {
         }
     },
     methods: {
-        selectTab(name) {
+        selectTab(name: string) {
             let index = getTabIndex(this.tabs, name);
             this.tabs.forEach(diactivate);
             this.tabs[index].isActive = true;
         },
-         closeTab(name) {
+         closeTab(name: string) {
             if(name !== "Home.go") {
                 let index = getTabIndex(this.tabs, name);
                 if(this.tabs[index].isActive) {
@@ -40,7 +49,7 @@ export default {
             }
         });
     },
-}; 
+}); 
 
 </script>
 

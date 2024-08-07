@@ -1,5 +1,8 @@
 <script lang="ts">
-export default {
+
+import { defineComponent } from "vue";
+
+export default defineComponent({
     props:{
             totalLine: {
             type: Number,
@@ -15,7 +18,7 @@ export default {
             return this.totalLine
         },
     },
-}; 
+}); 
 </script>
 
 <template>

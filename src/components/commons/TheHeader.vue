@@ -1,8 +1,10 @@
 <script lang="ts">
 
+import { defineComponent } from "vue";
+
 import eventBus from '../consumable/eventBus';
 
-export default {
+export default defineComponent({
     data() {
         return {
             isExplorerOpened: false,
@@ -17,7 +19,7 @@ export default {
     mounted() {
         eventBus.on('closeExplorer', (data: boolean) => {this.isExplorerOpened = data;});
     },
-};
+});
 </script>
 
 <template>
