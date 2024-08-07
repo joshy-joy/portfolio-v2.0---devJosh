@@ -3,6 +3,11 @@
 import { defineComponent } from "vue";
 
 export default defineComponent({
+    data() {
+        return {
+            defaultLineNumberCount: 50,
+        }
+    },
     props:{
             totalLine: {
             type: Number,
@@ -11,7 +16,7 @@ export default defineComponent({
         },
     },
     computed: {
-        lineCount() {
+        lineCount(): number {
             if(this.totalLine <= 0) {
                 return this.defaultLineNumberCount
             } 
