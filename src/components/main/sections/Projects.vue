@@ -5,7 +5,6 @@ import { defineComponent } from "vue";
 import eventBus from '../../consumable/eventBus';
 import supabase, { Query, DBOperations, FilterTypes, Response } from '../../consumable/externals/supabase'
 import { projectConstants, projectTableColumns } from '../../consumable/constants/projects'
-import { error } from "console";
 
 interface Project {
     id: string;
