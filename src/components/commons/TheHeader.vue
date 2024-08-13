@@ -33,7 +33,7 @@ export default defineComponent({
         <div class="search-bar">
             <!-- <input type="text" placeholder="search"/> -->
             <div class="logo">
-                <img src="/images/logo.png" alt="">
+                <img src="https://ebjhvskzfrqrgegxbsnz.supabase.co/storage/v1/object/public/portfolio_images/common/logo.png?t=2024-08-13T17%3A43%3A02.846Z" alt="">
             </div>
              <p>joshy_joy</p>
         </div>
