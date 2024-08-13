@@ -3,29 +3,9 @@
 import { defineComponent } from "vue";
 
 import eventBus from '../../consumable/eventBus';
-import supabase, { Query, DBOperations, FilterTypes, Response } from '../../consumable/externals/supabase'
+import supabase, { type Query, DBOperations, FilterTypes, type Response } from '../../consumable/externals/supabase'
 import { projectConstants, projectTableColumns } from '../../consumable/constants/projects'
-
-interface Project {
-    id: string;
-    name: string;
-    description: string;
-    status: string;
-    image: string;
-    redirect: string;
-    tags?: Array<string>;
-}
-
-interface ProjectList {
-    personal?: Array<Project>;
-    company?: Array<Project>;
-}
-
-interface Data {
-    projects?: ProjectList;
-    isPersonalProjectEmpty: boolean;
-    IsCompanyProjectEmpty: boolean;
-}
+import { type Project, type ProjectList, type Data} from '../../consumable/models/projects'
 
 export default defineComponent({
     data(): Data {
@@ -52,9 +32,9 @@ export default defineComponent({
 
             supabase.executeQuery(req).then(
                 (response: Response) => {
-                    this.projects.company = response.data;
-                    if (this.projects.company) {
-                        this.IsCompanyProjectEmpty = this.projects?.company?.length <= 0
+                    if(this.projects && this.projects.company) {
+                        this.projects.company = response.data as Array<Project>;
+                        this.IsCompanyProjectEmpty = this.projects.company.length <= 0
                     }
                 }
             ).catch(
@@ -74,12 +54,11 @@ export default defineComponent({
             if (tags && tags.length > 0) {
                 req.filters.push({type: FilterTypes.OVERLAP, column: projectTableColumns.TAG, value: tags})
             }
-
-            this.projects.personal = supabase.executeQuery(req).then(
+            supabase.executeQuery(req).then(
                 (response: Response) => {
-                    this.projects.personal = response.data;
-                    if (this.projects.personal) {
-                        this.isPersonalProjectEmpty = this.projects?.personal?.length <= 0
+                    if (this.projects && this.projects.personal) {
+                        this.projects.personal = response.data as Array<Project>;
+                        this.isPersonalProjectEmpty = this.projects.personal.length <= 0
                     }
                 }
             ).catch(
@@ -90,8 +69,8 @@ export default defineComponent({
         },
     },
     beforeMount() {
-        this.fetchCompanyProjects(null);
-        this.fetchPersonalProjects(null);
+        this.fetchCompanyProjects([]);
+        this.fetchPersonalProjects([]);
         eventBus.on('filterProjects', (filteredStack: Array<String>) => {
                 this.fetchCompanyProjects(filteredStack);
                 this.fetchPersonalProjects(filteredStack);
@@ -106,7 +85,7 @@ export default defineComponent({
         <div class="card-container">
             <p class="code-comments" v-if="!IsCompanyProjectEmpty">// Company Projects</p>
             <div class="row row-cols-3">
-                <div class="col card-wrap" :key="project.id" v-for="(project, i) in projects.company">
+                <div class="col card-wrap" :key="project.id" v-for="(project, i) in projects?.company">
                     <p class="project-comment">
                         <span class="code-blue">Project {{ i+1 }} </span>
                         <span class="code-comments"> // {{ project.name }}</span>
@@ -130,7 +109,7 @@ export default defineComponent({
             </div>
             <p class="code-comments" v-if="!isPersonalProjectEmpty">// Personal Projects</p>
             <div class="row row-cols-3">
-                <div class="col card-wrap" :key="project.id" v-for="(project, i) in projects.personal">
+                <div class="col card-wrap" :key="project.id" v-for="(project, i) in projects?.personal">
                     <p class="project-comment">
                         <span class="code-blue">Project {{ i+1 }} </span>
                         <span class="code-comments"> // {{ project.name }}</span>
