@@ -10,7 +10,7 @@ import { type Project, type ProjectList, type Data} from '../../consumable/model
 export default defineComponent({
     data(): Data {
         return {
-            projects : <ProjectList>{},
+            projects : <ProjectList>{company:[], personal: []},
             isPersonalProjectEmpty: false,
             IsCompanyProjectEmpty: false,
 
