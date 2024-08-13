@@ -3,127 +3,77 @@
 import { defineComponent } from "vue";
 
 import eventBus from '../../consumable/eventBus';
-
-interface Project {
-    id: string;
-    name: string;
-    description: string;
-    status: string;
-    image: string;
-    redirect: string;
-    tags?: Array<string>;
-}
-
-interface ProjectList {
-    personal?: Array<Project>;
-    company?: Array<Project>;
-}
-
-interface Data {
-    projects?: ProjectList;
-    filteredProjects: ProjectList;
-    isPersonalProjectEmpty: boolean;
-    IsCompanyProjectEmpty: boolean;
-}
-
-const filterTags = (project: Project, filteredStack: Array<String>) => {
-    if(project.tags) {
-        let temp = project.tags.filter((t:string) => filteredStack.includes(t));
-        if(temp) {
-            return (temp.length > 0)
-        }
-    }
-    return false;
-}
+import supabase, { type Query, DBOperations, FilterTypes, type Response } from '../../consumable/externals/supabase'
+import { projectConstants, projectTableColumns } from '../../consumable/constants/projects'
+import { type Project, type ProjectList, type Data} from '../../consumable/models/projects'
 
 export default defineComponent({
     data(): Data {
         return {
-             projects : {
-                personal: [
-                    {
-                        id:"d035d93d-22bb-40e3-9238-d62ac4a88daa",
-                        name:"FolioHub",
-                        description: `A Software-as-a-Service (SaaS) platform empowers users to create and showcase 
-                                        portfolio websites without coding skills effortlessly.`,
-                        status: "in-progress",
-                        image: "/images/foliohub.png",
-                        redirect: "",
-                        tags: ['python', 'javascript', 'vue', 'django', 'postgresql']
-                    },
-                    {
-                        id:"4a05a71a-ab50-4c1d-ac08-c5b544056571",
-                        name:"One-Call",
-                        description: `The Onecall library is used to connect and trade with cryptocurrency exchanges 
-                                        and payment processing services worldwide.`,
-                        status: "completed",
-                        image: "/images/onecall.png",
-                        redirect: "https://pypi.org/project/onecall/",
-                        tags: ['python']
-                    },
-                    {
-                        id:"e307b453-da78-433f-a099-dcc058fd3454",
-                        name:"M-Health",
-                        description: `A deep learning model designed to predict employees' mental health conditions and 
-                                        determine if they require medical support`,
-                        status: "completed",
-                        image: "/images/mental-health-app.png",
-                        redirect: "https://github.com/joshy-joy/Employee-Treatment-prediction",
-                        tags: ['python']
-                    },
-                    {
-                        id:"928acebe-1d4c-456d-adf7-2bb7b55279cc",
-                        name:"Portfolio",
-                        description: `A re-designed developer portfolio that took the theme of VS Code editor`,
-                        status: "completed",
-                        image: "/images/portfolio.png",
-                        redirect: "https://github.com/joshy-joy/portfolio-v2.0---devJosh",
-                        tags: ['vue', 'golang', 'postgresql']
-                    },
-                ],
-                company: [
-                    {
-                        id:"80acf183-6042-43fe-bb57-40544d212c5c",
-                        name:"NXT 2.0",
-                        description: `NXT is the sub-broker platform that enable partners to acquire provide stock 
-                                        brokerage service.`,
-                        status: "On-going",
-                        image: "/images/nxt.png",
-                        redirect: "https://www.angelone.in/authorised-person/platform-and-tools",
-                        tags: ['python', 'golang', 'postgresql', 'sql server']
-                    },
-                    {
-                        id:"d3487a12-b00a-4ce8-bef0-af8cabfd0408",
-                        name:"Cira",
-                        description: `CIRA by CogniCor is a digital assistant platform that uses AI to improve 
-                                    efficiency and client engagement in financial services and wealth management.`,
-                        status: "On-going",
-                        image: "/images/cira.png",
-                        redirect: "https://www.cognicor.com/platform",
-                        tags: ['python', 'javascript', 'angular', 'flask', 'mongo db']
-                    },
-                ]
-            },
-            filteredProjects: {},
+            projects : <ProjectList>{company:[], personal: []},
             isPersonalProjectEmpty: false,
             IsCompanyProjectEmpty: false,
 
         }
     },
+    methods: {
+        // Mehod to fetch company projects
+        fetchCompanyProjects(tags: Array<String>) {
+            let req = <Query>{
+                operation: DBOperations.FETCH,
+                table: projectConstants.SUPABASE_TABLE_PROJECTS,
+            };
+            req.filters = [
+                {type: FilterTypes.EQ, column: projectTableColumns.TYPE, value: projectConstants.PROJECT_TYPE_COMPANY},
+            ];
+            if (tags && tags.length > 0) {
+                req.filters.push({type: FilterTypes.OVERLAP, column: projectTableColumns.TAG, value: tags})
+            }
+
+            supabase.executeQuery(req).then(
+                (response: Response) => {
+                    if(this.projects && this.projects.company) {
+                        this.projects.company = response.data as Array<Project>;
+                        this.IsCompanyProjectEmpty = this.projects.company.length <= 0
+                    }
+                }
+            ).catch(
+                (err: Error) => {
+                    console.error(err);
+                }
+            );
+        },
+
+        // Mehod to fetch personal projects
+        fetchPersonalProjects(tags: Array<String>) {
+            let req = <Query>{
+                operation: DBOperations.FETCH,
+                table: projectConstants.SUPABASE_TABLE_PROJECTS,
+            };
+            req.filters = [{type: FilterTypes.EQ, column: projectTableColumns.TYPE, value: projectConstants.PROJECT_TYPE_PERSONAL}];
+            if (tags && tags.length > 0) {
+                req.filters.push({type: FilterTypes.OVERLAP, column: projectTableColumns.TAG, value: tags})
+            }
+            supabase.executeQuery(req).then(
+                (response: Response) => {
+                    if (this.projects && this.projects.personal) {
+                        this.projects.personal = response.data as Array<Project>;
+                        this.isPersonalProjectEmpty = this.projects.personal.length <= 0
+                    }
+                }
+            ).catch(
+                (err: Error) => {
+                    console.error(err);
+                }
+            );
+        },
+    },
     beforeMount() {
-        this.filteredProjects = Object.assign({}, this.projects)
+        this.fetchCompanyProjects([]);
+        this.fetchPersonalProjects([]);
         eventBus.on('filterProjects', (filteredStack: Array<String>) => {
-            this.filteredProjects = Object.assign({}, this.projects)
-            if (filteredStack.length > 0) {
-                this.filteredProjects.personal = this.projects?.personal?.filter((p: Project) => filterTags(p, filteredStack));
-                this.filteredProjects.company = this.projects?.company?.filter((p: Project) => filterTags(p, filteredStack));
-            }
-            if (this.filteredProjects.personal) {
-                this.isPersonalProjectEmpty = this.filteredProjects?.personal?.length <= 0
-            }
-            if (this.filteredProjects.company) {
-                this.IsCompanyProjectEmpty = this.filteredProjects?.company?.length <= 0
-            }
+                this.fetchCompanyProjects(filteredStack);
+                this.fetchPersonalProjects(filteredStack);
         });
     },
 });
@@ -135,7 +85,7 @@ export default defineComponent({
         <div class="card-container">
             <p class="code-comments" v-if="!IsCompanyProjectEmpty">// Company Projects</p>
             <div class="row row-cols-3">
-                <div class="col card-wrap" :key="project.id" v-for="(project, i) in filteredProjects.company">
+                <div class="col card-wrap" :key="project.id" v-for="(project, i) in projects?.company">
                     <p class="project-comment">
                         <span class="code-blue">Project {{ i+1 }} </span>
                         <span class="code-comments"> // {{ project.name }}</span>
@@ -159,7 +109,7 @@ export default defineComponent({
             </div>
             <p class="code-comments" v-if="!isPersonalProjectEmpty">// Personal Projects</p>
             <div class="row row-cols-3">
-                <div class="col card-wrap" :key="project.id" v-for="(project, i) in filteredProjects.personal">
+                <div class="col card-wrap" :key="project.id" v-for="(project, i) in projects?.personal">
                     <p class="project-comment">
                         <span class="code-blue">Project {{ i+1 }} </span>
                         <span class="code-comments"> // {{ project.name }}</span>
