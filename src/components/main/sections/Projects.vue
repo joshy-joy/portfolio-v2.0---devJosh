@@ -38,8 +38,8 @@ export default defineComponent({
         }
     },
     methods: {
-        fetchProjects() {
-            // get company projects
+        // Mehod to fetch company projects
+        fetchCompanyProjects(tags: Array<String>) {
             let req = <Query>{
                 operation: DBOperations.FETCH,
                 table: projectConstants.SUPABASE_TABLE_PROJECTS,
@@ -47,81 +47,55 @@ export default defineComponent({
             req.filters = [
                 {type: FilterTypes.EQ, column: projectTableColumns.TYPE, value: projectConstants.PROJECT_TYPE_COMPANY},
             ];
-            supabase.executeQuery(req).catch(
-                (err) => {
-                    console.error(err);
-                }
-            ).then(
+            if (tags && tags.length > 0) {
+                req.filters.push({type: FilterTypes.OVERLAP, column: projectTableColumns.TAG, value: tags})
+            }
+
+            supabase.executeQuery(req).then(
                 (response: Response) => {
                     this.projects.company = response.data;
+                    if (this.projects.company) {
+                        this.IsCompanyProjectEmpty = this.projects?.company?.length <= 0
+                    }
                 }
-            );
-            // get personal projects
-            req.filters = [
-                {type: FilterTypes.EQ, column: projectTableColumns.TYPE, value: projectConstants.PROJECT_TYPE_PERSONAL},
-            ];
-            supabase.executeQuery(req).catch(
-                (err) => {
+            ).catch(
+                (err: Error) => {
                     console.error(err);
-                }
-            ).then(
-                (response: Response) => {
-                    this.projects.personal = response.data;
                 }
             );
         },
-        fetchProjectsWithTagFilter(tags: Array<String>) {
-            // get company projects
+
+        // Mehod to fetch personal projects
+        fetchPersonalProjects(tags: Array<String>) {
             let req = <Query>{
                 operation: DBOperations.FETCH,
                 table: projectConstants.SUPABASE_TABLE_PROJECTS,
             };
-            req.filters = [
-                {type: FilterTypes.EQ, column: projectTableColumns.TYPE, value: projectConstants.PROJECT_TYPE_COMPANY},
-                {type: FilterTypes.OVERLAP, column: projectTableColumns.TAG, value: tags},
-            ];
-            this.projects.company = supabase.executeQuery(req).catch(
-                (err) => {
-                    console.error(err);
-                }
-            ).then(
+            req.filters = [{type: FilterTypes.EQ, column: projectTableColumns.TYPE, value: projectConstants.PROJECT_TYPE_PERSONAL}];
+            if (tags && tags.length > 0) {
+                req.filters.push({type: FilterTypes.OVERLAP, column: projectTableColumns.TAG, value: tags})
+            }
+
+            this.projects.personal = supabase.executeQuery(req).then(
                 (response: Response) => {
-                    console.log(response)
-                    this.projects.company = response.data;
-                }
-            );
-        
-            // get personal projects
-            req.filters = [
-                {type: FilterTypes.EQ, column: projectTableColumns.TYPE, value: projectConstants.PROJECT_TYPE_PERSONAL},
-                {type: FilterTypes.OVERLAP, column: projectTableColumns.TAG, value: tags},
-            ];
-            this.projects.personal = supabase.executeQuery(req).catch(
-                (err) => {
-                    console.error(err);
-                }
-            ).then(
-                (response: Response) => {
-                    console.log(response)
                     this.projects.personal = response.data;
+                    if (this.projects.personal) {
+                        this.isPersonalProjectEmpty = this.projects?.personal?.length <= 0
+                    }
+                }
+            ).catch(
+                (err: Error) => {
+                    console.error(err);
                 }
             );
-        }
+        },
     },
     beforeMount() {
-        this.fetchProjects();
+        this.fetchCompanyProjects(null);
+        this.fetchPersonalProjects(null);
         eventBus.on('filterProjects', (filteredStack: Array<String>) => {
-            if (filteredStack.length > 0) {
-                this.fetchProjectsWithTagFilter(filteredStack)
-            } else {
-                this.fetchProjects();
-            }
-            if (this.projects.personal) {
-                this.isPersonalProjectEmpty = this.projects?.personal?.length <= 0
-            }
-            if (this.projects.company) {
-                this.IsCompanyProjectEmpty = this.projects?.company?.length <= 0
-            }
+                this.fetchCompanyProjects(filteredStack);
+                this.fetchPersonalProjects(filteredStack);
         });
     },
 });
