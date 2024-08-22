@@ -52,6 +52,7 @@ export default defineComponent({
     top: 30px;
     height: calc(100% - 30px);
     width: 100%;
+    overflow-y: scroll;
  }
 
  .section-view::-webkit-scrollbar {

@@ -103,6 +103,27 @@ class Supabase {
     async executeQuery(query: Query): Promise<Response> {
         return await this.buildQuery(query)
     }
+
+    async login(email, password) {
+        return await this.conn.auth.signInWithPassword({
+            email: email,
+            password: password,
+          })
+    }
+
+    async logout() {
+        return await this.conn.auth.signOut();
+    }
+
+    async getUserSession() {
+        return await this.conn.auth.getSession();
+    }
+
+    OnAuthEventChange(callBack) {
+        return this.conn.auth.onAuthStateChange((event, session) => {
+            callBack(event, session);
+        });
+    }
 } 
 
 const supabase = new Supabase(import.meta.env.VITE_SUPABASE_PROJECT_PORTFOLIO_API_URL, import.meta.env.VITE_SUPABASE_PROJECT_PORTFOLIO_API_KEY)

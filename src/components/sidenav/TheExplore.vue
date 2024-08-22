@@ -22,7 +22,9 @@ export default defineComponent({
             folderIconPath: mdiFolder,
             javascriptIconPath: mdiLanguageJavascript,
 
+            isDirectoryExpanded: true,
             isProjectFolderExpanded: false,
+            isBlogFolderExpanded: false,
             showExplorer: false,
             selectedTechStacks: [],
             techStacks: [
@@ -36,18 +38,24 @@ export default defineComponent({
                 'PostgreSQL',
                 'SQL Server',
                 'Mongo DB',
-            ]
+            ],
+            blogTitles: [],
     }
   },
   methods: {
     openTab(tabName, path) {
         if (tabName === 'projects') {
             this.isProjectFolderExpanded = !this.isProjectFolderExpanded;
+        } else if (tabName == 'blogs') {
+            this.isBlogFolderExpanded = !this.isBlogFolderExpanded;
         }
         eventBus.emit('openTab', tabName, path)
     },
     filterProjects() {
         eventBus.emit('filterProjects', this.selectedTechStacks)
+    },
+    login() {
+        eventBus.emit('login', true);
     }
   },
   mounted() {
@@ -59,7 +67,16 @@ export default defineComponent({
 
 <template>
     <div class="col-sm-2" :class="{'show-explorer': showExplorer, 'hide-explorer': !showExplorer}">
-        <div class="container-fluid">
+        <div class="nav">
+            <div class="nav-menu-top">
+                <i class="bi bi-files"></i>
+                <i class="bi bi-boxes"></i>
+            </div>
+            <div class="nav-menu-bottom">
+                <i class="bi bi-person-circle" @click="login()"></i>
+            </div>
+        </div>
+        <div class="container-fluid" v-if="isDirectoryExpanded">
             <div class="explorer-heading-tab">
                     <i class="bi"> </i>
                     <h6 class="explorer-heading">EXPLORER</h6>
@@ -92,6 +109,35 @@ export default defineComponent({
                                     type="checkbox"
                                     name="projectFilter"
                                     :value="tech.toLowerCase()" 
+                                    :id="tech" 
+                                    v-model="selectedTechStacks" 
+                                    @change="filterProjects()">
+                                <label class="form-check-label" for="tech">
+                                    {{ tech }}
+                                </label>
+                            </div>
+                        </div>
+                        <li class="directory-list-item" @click="openTab('blogs', '/blogs')">
+                            <router-link to="/blogs">
+                                <div class="file-item-wrap">
+                                    <div class="icon-wrap">
+                                        <i class="bi bi-chevron-down" v-if="isBlogFolderExpanded"></i>
+                                        <i class="bi bi-chevron-right" v-else></i>
+                                        <svg-icon class="folder-icon-svg" type="mdi" :path="folderIconPath"></svg-icon>
+                                    </div>
+                                    <p class="file-item-name">
+                                        Blogs
+                                    </p>
+                                </div>
+                            </router-link>
+                        </li>
+                        <div class="projects-type-wrap" v-if="isBlogFolderExpanded">
+                            <div class="form-check" :key=blog.id v-for="blog in blogList">
+                                <input 
+                                    class="form-check-input" 
+                                    type="checkbox"
+                                    name="projectFilter"
+                                    :value="blog.toLowerCase()" 
                                     :id="tech" 
                                     v-model="selectedTechStacks" 
                                     @change="filterProjects()">
@@ -145,6 +191,35 @@ export default defineComponent({
     font-family: "Roboto", sans-serif;
     min-width: 220px;
     height: 100%;
+
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+ }
+
+ .nav {
+    border-right: 1px solid #2b2b2b;
+    height: 100%;
+    width: 40px;
+    padding: 10px 15px 10px 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;    
+ }
+
+ .nav-menu-top i::before {
+    margin: 0 0 20px 0;
+ }
+
+ i::before {
+    font-size: 25px;
+    cursor: pointer;
+ }
+
+ i:hover {
+    color: #ffff;
  }
 
  .explorer-heading-tab {

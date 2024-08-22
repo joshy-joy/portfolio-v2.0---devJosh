@@ -1,10 +1,36 @@
 <script lang="ts">
-export default {};
+
+import supabase from './components/consumable/externals/supabase';
+
+const authEventCallBack = (event: string, session: any) => {
+  if (event === 'SIGNED_IN') {
+    console.log(session);
+  } else if (event === 'SIGNED_OUT') {
+    console.log(session);
+  }
+}
+
+export default {
+  data() {
+    return {
+      supabaseEventSubscription: null,
+    }
+  },
+  beforeMount() {
+    this.supabaseEventSubscription = supabase.OnAuthEventChange(authEventCallBack)
+  },
+  beforeUnmount() {
+    if (this.supabaseEventSubscription.subscription) {
+      this.supabaseEventSubscription.subscription.unsubscribe();
+    }
+  },
+};
 
 </script>
 
 <template>
   <div class="container-fluid">
+    <login></login>
     <div class="header">
       <portfolio-header></portfolio-header>
     </div>
