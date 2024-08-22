@@ -28,7 +28,6 @@ jobs:
           npm run lint
 
       - name: Post ESLint output to PR
-        if: failure()
         uses: actions/github-script@v6
         with:
           script: |
