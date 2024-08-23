@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -24,8 +25,8 @@ jobs:
       - name: Run build
         id: build
         run: |
-          echo 'LINT_ERRORS<<EOF' >> $GITHUB_OUTPUT
-          echo "LINT_ERRORS=$(npm run build 2>&1)\n" >> $GITHUB_OUTPUT
+          echo 'BUILD_ERRORS<<EOF' >> $GITHUB_OUTPUT
+          echo "BUILD_ERRORS=$(npm run build 2>&1)\n" >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
           npm run build
           
@@ -33,11 +34,11 @@ jobs:
         if: failure()
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          header: Lint Check Error
+          header: Build Error
           message: |
             **Lint Check Failed** :x:
             ```
-            ${{ join(steps.lint.outputs.*, '\n') }}
+            ${{ join(steps.build.outputs.*, '\n') }}
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
