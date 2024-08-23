@@ -1,5 +1,8 @@
 # portfolio-ui
 
+[![Build](https://github.com/joshy-joy/portfolio-v2.0---devJosh/actions/workflows/build.yml/badge.svg)](https://github.com/joshy-joy/portfolio-v2.0---devJosh/actions/workflows/build.yml)
+[![Check](https://github.com/joshy-joy/portfolio-v2.0---devJosh/actions/workflows/Check.yml/badge.svg)](https://github.com/joshy-joy/portfolio-v2.0---devJosh/actions/workflows/Check.yml)
+
 This is the second iteration of my portfolio. Completely migrating to vue.js from flask and Jinja templates.
 
 ## Recommended IDE Setup
