@@ -1,0 +1,43 @@
+name: Check
+
+"on":
+  pull_request:
+    branches:
+      - main
+permissions:
+  pull-requests: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run lint
+        id: lint
+        run: |
+          echo 'LINT_ERRORS<<EOF' >> $GITHUB_OUTPUT
+          echo "LINT_ERRORS=$(npm run lint 2>&1)\n" >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+          npm run lint
+          
+      - name: Output lint errors
+        if: failure()
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: Lint Check Error
+          message: |
+            **Lint Check Failed** :x:
+            ```
+            ${{ join(steps.lint.outputs.*, '\n') }}
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
