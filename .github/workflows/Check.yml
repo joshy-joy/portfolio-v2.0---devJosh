@@ -24,10 +24,10 @@ jobs:
       - name: Run lint
         id: lint
         run: |
-          npm run lint
           echo 'LINT_ERRORS<<EOF' >> $GITHUB_OUTPUT
           echo "LINT_ERRORS=$(npm run lint 2>&1)\n" >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
+          npm run lint
           
       - name: Output lint errors
         if: failure()
