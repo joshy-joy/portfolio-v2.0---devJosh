@@ -24,7 +24,7 @@ jobs:
       - name: Run lint
         id: lint
         run: |
-          npm run lint || echo "::set-output name=lint_result::fail"
+          npm run lint || echo "lint_result=fail" >> "$GITHUB_LIST_STATUS"
 
       - name: Create PR comment with lint results
         if: failure()
@@ -34,7 +34,7 @@ jobs:
           message: |
             **Lint Check Failed** :x:
             ```
-            ${{ steps.lint.outputs.lint_result }}
+            $GITHUB_LIST_STATUS
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
