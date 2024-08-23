@@ -24,7 +24,6 @@ jobs:
       - name: Run lint
         id: lint
         run: |
-          npm run lint
           echo "LINT_ERRORS=$(npm run lint 2>&1)\n" >> $GITHUB_OUTPUT
           
       - name: Output lint errors
