@@ -24,18 +24,18 @@ jobs:
       - name: Run lint
         id: lint
         run: |
-          LINT_ERRORS=$(npm run lint)
-          echo "LINT_ERRORS=$LINT_ERRORS" >> $GITHUB_ENV
+          npm run lint
+          echo "LINT_ERRORS=$(npm run lint 2>&1)\n" >> $GITHUB_OUTPUT
           
       - name: Output lint errors
         if: failure()
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          header: Lint Check
+          header: Lint Check Error
           message: |
             **Lint Check Failed** :x:
             ```
-            ${{ env.LINT_ERRORS }} 
+            ${{ steps.lint.outputs.* }}
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
