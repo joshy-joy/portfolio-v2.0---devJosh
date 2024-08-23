@@ -19,12 +19,14 @@ jobs:
           node-version: '20'
           
       - name: Install dependencies
-        run: npm install
+        run: npm ci
         
       - name: Run lint
         id: lint
         run: |
+          echo "LINT_ERRORS<<$EOF" >> $GITHUB_OUTPUT
           echo "LINT_ERRORS=$(npm run lint 2>&1)\n" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
           
       - name: Output lint errors
         if: failure()
