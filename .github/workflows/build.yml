@@ -36,7 +36,7 @@ jobs:
         with:
           header: Build Error
           message: |
-            **Lint Check Failed** :x:
+            **Build Failed** :x:
             ```
             ${{ join(steps.build.outputs.*, '\n') }}
             ```
