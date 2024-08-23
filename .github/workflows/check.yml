@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -21,27 +21,20 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run ESLint
-        id: eslint-lint
-        continue-on-error: true
+      - name: Run lint
+        id: lint
         run: |
-          npm run lint
+          npm run lint || echo "::set-output name=lint_result::fail"
 
-      - name: Post ESLint output to PR
-        uses: actions/github-script@v6
+      - name: Create PR comment with lint results
+        if: failure()
+        uses: marocchino/sticky-pull-request-comment@v2
         with:
-          script: |
-            const fs = require('fs');
-            const eslintOutput = fs.readFileSync('eslint-output.log', 'utf8');
-            const issue_number = context.issue.number;
-            const repo_owner = context.repo.owner;
-            const repo_name = context.repo.repo;
-
-            if (eslintOutput) {
-              github.rest.issues.createComment({
-                issue_number: issue_number,
-                owner: repo_owner,
-                repo: repo_name,
-                body: `### :x: ESLint found issues\n\`\`\`eslint\n${eslintOutput}\n\`\`\``
-              });
-            }
+          header: Lint Check
+          message: |
+            **Lint Check Failed** :x:
+            ```
+            ${{ steps.lint.outputs.lint_result }}
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
