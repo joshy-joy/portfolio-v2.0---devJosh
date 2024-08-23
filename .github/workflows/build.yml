@@ -4,6 +4,11 @@ name: Build
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - 'README.md'
+      - '.github/**'
+      - '.vscode/**'
+      
 permissions:
   pull-requests: write
 
