@@ -4,6 +4,8 @@ name: Check
   pull_request:
     branches:
       - main
+permissions:
+  pull-requests: write
 
 jobs:
   lint:
@@ -22,7 +24,8 @@ jobs:
       - name: Run lint
         id: lint
         run: |
-          npm run lint || echo "lint_result=fail" >> "$GITHUB_LIST_STATUS"
+          LINT_ERRORS=$(npm run lint 2>&1 >/dev/null)
+          echo "LINT_ERRORS=$LINT_ERRORS" >> $GITHUB_ENV
           
       - name: Output lint errors
         if: failure()
@@ -32,24 +35,7 @@ jobs:
           message: |
             **Lint Check Failed** :x:
             ```
-            ${{ steps.tests.outputs.stdout }}   
+            ${{ env.LINT_ERRORS }} 
             ```
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Add PR comment
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `Lint results:
-              \`\`\`bash
-                ${{ steps.tests.outputs.stdout }}  
-              \`\`\`
-              `
-            })
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
