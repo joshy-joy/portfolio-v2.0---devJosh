@@ -5,8 +5,7 @@ import 'bootstrap-vue/dist/bootstrap-vue.css'
 import './assets/css/common.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
-import PublicRoutes from './routes/PublicRoutes'
-import AdminRouter from './routes/AdminRoutes'
+import router from './routes/router'
 
 import HeaderLayout from './components/layout/HeaderLayout.vue'
 import TheNavigations from './components/navigations/TheNavigations.vue'
@@ -26,7 +25,6 @@ app.component('line-number', TheLineNumber)
 app.component('authentication-window', AuthenticationWindow)
 app.component('push-notifications', PushNotifications)
 
-app.use(PublicRoutes)
-app.use(AdminRouter)
+app.use(router)
 
 app.mount('#app')
