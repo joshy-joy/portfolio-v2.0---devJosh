@@ -59,7 +59,7 @@ export default {
   },
   mounted() {
     this.checkAuthenticationState()
-    eventBus.on('login', (data: boolean) => {
+    eventBus.on('openLoginWindow', (data: boolean) => {
       this.checkAuthenticationState()
       this.showLoginWindow = data
     })
