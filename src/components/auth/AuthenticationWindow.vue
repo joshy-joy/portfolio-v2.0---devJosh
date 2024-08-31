@@ -73,6 +73,7 @@ export default {
       <i class="bi bi-x-lg" @click="hideLoginWindow()"></i>
     </div>
     <form class="contact-form" v-if="!isAlreadyLoggedIn">
+      <h4>Login</h4>
       <div class="mb-3">
         <label for="email" class="form-label">_email:</label>
         <input type="email" class="form-control" id="email" v-model="email" />
@@ -130,6 +131,11 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.contact-form h4 {
+  text-align: center;
+  margin: 0 0 75px 0;
 }
 
 .contact-form .form-control {
