@@ -63,12 +63,11 @@ export default defineComponent({})
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding: 0 30px;
+  padding: 5px 30px;
 }
 
 .file-item-name {
   margin: 0;
-  padding: 0 0 0 15px;
   font-size: 14px;
   font-family: 'Roboto', sans-serif;
 }
