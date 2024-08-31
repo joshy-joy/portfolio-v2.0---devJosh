@@ -5,11 +5,13 @@ import FileExplorer from './secondarymenu/FileExplorer.vue'
 import BlogExplorer from './secondarymenu/BlogExplorer.vue'
 
 import eventBus from '../consumable/eventBus'
+import AdminDashboard from './secondarymenu/AdminDashboard.vue'
 
 export default defineComponent({
   components: {
     'file-explorer': FileExplorer,
-    'blog-explorer': BlogExplorer
+    'blog-explorer': BlogExplorer,
+    'admin-dashboard': AdminDashboard
   },
   data() {
     return {
@@ -74,6 +76,9 @@ export default defineComponent({
       v-if="activePrimaryMenuItem == 'explorer' && isSecondaryMenuVisible"
     ></file-explorer>
     <blog-explorer v-if="activePrimaryMenuItem == 'blog' && isSecondaryMenuVisible"></blog-explorer>
+    <admin-dashboard
+      v-if="activePrimaryMenuItem == 'dashboard' && isSecondaryMenuVisible"
+    ></admin-dashboard>
   </div>
 </template>
 

@@ -164,6 +164,11 @@ export default {
   display: none;
 }
 
+.form-control:focus {
+  border: 1px solid #0279cb;
+  box-shadow: none;
+}
+
 @media all and (max-width: 550px) {
   .contact-form {
     width: 250px;

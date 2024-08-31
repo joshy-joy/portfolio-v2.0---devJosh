@@ -5,7 +5,6 @@ import About from './components/content/pages/About.vue'
 import Projects from './components/content/pages/Projects.vue'
 import Blogs from './components/content/pages/Blogs.vue'
 import Contact from './components/content/pages/Contact.vue'
-import Dashboard from './components/dashboard/TheDashboard.vue'
 
 import supabase from './components/consumable/externals/supabase'
 
@@ -14,14 +13,14 @@ const routes = [
   { path: '/about', component: About },
   { path: '/projects', component: Projects },
   { path: '/blogs', component: Blogs },
-  { path: '/contact', component: Contact },
-  {
-    path: '/dashboard',
-    component: Dashboard,
-    meta: {
-      requiresAuth: true
-    }
-  }
+  { path: '/contact', component: Contact }
+  // {
+  //   path: '/dashboard',
+  //   component: AdminDashboard,
+  //   meta: {
+  //     requiresAuth: true
+  //   }
+  // }
 ]
 
 const router = createRouter({
