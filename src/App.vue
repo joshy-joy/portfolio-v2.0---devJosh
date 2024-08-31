@@ -1,35 +1,35 @@
 <script lang="ts">
+import supabase from './components/consumable/externals/supabase'
+import eventBus from './components/consumable/eventBus'
 
-import supabase from './components/consumable/externals/supabase';
-
-const authEventCallBack = (event: string, session: any) => {
+const authEventCallBack = (event: string) => {
   if (event === 'SIGNED_IN') {
-    console.log(session);
+    eventBus.emit('authEvent', true)
   } else if (event === 'SIGNED_OUT') {
-    console.log(session);
+    eventBus.emit('authEvent', false)
   }
 }
 
 export default {
   data() {
     return {
-      supabaseEventSubscription: null,
+      supabaseEventSubscription: null
     }
   },
   beforeMount() {
     this.supabaseEventSubscription = supabase.OnAuthEventChange(authEventCallBack)
   },
   beforeUnmount() {
-    if (this.supabaseEventSubscription.subscription) {
-      this.supabaseEventSubscription.subscription.unsubscribe();
+    if (this.supabaseEventSubscription && this.supabaseEventSubscription.subscription) {
+      this.supabaseEventSubscription.subscription.unsubscribe()
     }
-  },
-};
-
+  }
+}
 </script>
 
 <template>
   <div class="container-fluid">
+    <notifications></notifications>
     <login></login>
     <div class="header">
       <portfolio-header></portfolio-header>
@@ -88,11 +88,11 @@ body {
 }
 
 .footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    height: 25px;
-    width: 100%;
-    background-color: #0279CB;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 25px;
+  width: 100%;
+  background-color: #0279cb;
 }
 </style>
