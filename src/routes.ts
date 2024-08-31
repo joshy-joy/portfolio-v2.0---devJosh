@@ -1,10 +1,10 @@
 import { createMemoryHistory, createRouter } from 'vue-router'
 
-import Home from './components/main/sections/Home.vue'
-import About from './components/main/sections/About.vue'
-import Projects from './components/main/sections/Projects.vue'
-import Blogs from './components/main/sections/Blogs.vue'
-import Contact from './components/main/sections/Contact.vue'
+import Home from './components/content/pages/Home.vue'
+import About from './components/content/pages/About.vue'
+import Projects from './components/content/pages/Projects.vue'
+import Blogs from './components/content/pages/Blogs.vue'
+import Contact from './components/content/pages/Contact.vue'
 import Dashboard from './components/dashboard/TheDashboard.vue'
 
 import supabase from './components/consumable/externals/supabase'

@@ -29,17 +29,17 @@ export default {
 
 <template>
   <div class="container-fluid">
-    <notifications></notifications>
-    <login></login>
+    <push-notifications></push-notifications>
+    <authentication-window></authentication-window>
     <div class="header">
-      <portfolio-header></portfolio-header>
+      <header-layout></header-layout>
     </div>
     <div class="row section">
-      <side-menu></side-menu>
-      <portfolio-content></portfolio-content>
+      <primary-nav></primary-nav>
+      <main-content></main-content>
     </div>
     <div class="footer">
-      <portfolio-footer></portfolio-footer>
+      <footer-layout></footer-layout>
     </div>
   </div>
 </template>
