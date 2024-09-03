@@ -1,27 +1,33 @@
 <script lang="ts">
+import { type Subscription } from '@supabase/supabase-js'
+
 import supabase from './components/consumable/externals/supabase'
 import eventBus from './components/consumable/eventBus'
 
 const authEventCallBack = (event: string) => {
-  if (event === 'SIGNED_IN') {
+  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
     eventBus.emit('authEvent', true)
   } else if (event === 'SIGNED_OUT') {
     eventBus.emit('authEvent', false)
   }
 }
 
+interface Main {
+  supabaseEventSubscription?: Subscription
+}
+
 export default {
-  data() {
+  data(): Main {
     return {
-      supabaseEventSubscription: null
+      supabaseEventSubscription: undefined
     }
   },
   beforeMount() {
     this.supabaseEventSubscription = supabase.OnAuthEventChange(authEventCallBack)
   },
   beforeUnmount() {
-    if (this.supabaseEventSubscription && this.supabaseEventSubscription.subscription) {
-      this.supabaseEventSubscription.subscription.unsubscribe()
+    if (this.supabaseEventSubscription) {
+      this.supabaseEventSubscription.unsubscribe()
     }
   }
 }

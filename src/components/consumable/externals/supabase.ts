@@ -118,7 +118,7 @@ class Supabase {
   }
 
   OnAuthEventChange(callBack: Function) {
-    return this.conn.auth.onAuthStateChange((event) => {
+    return this.conn.auth.onAuthStateChange((event: string) => {
       callBack(event)
     })
   }
