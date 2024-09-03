@@ -81,6 +81,7 @@ class Supabase {
               break
             case FilterTypes.LIKE:
               query = query.like(f.column, `%${f.value}%`)
+              break
             default:
               throw new Error('filter not defined')
           }
@@ -116,7 +117,7 @@ class Supabase {
     return await this.conn.auth.getSession()
   }
 
-  OnAuthEventChange(callBack) {
+  OnAuthEventChange(callBack: Function) {
     return this.conn.auth.onAuthStateChange((event) => {
       callBack(event)
     })
