@@ -9,12 +9,12 @@ import supabase, {
   type Response
 } from '../../consumable/externals/supabase'
 import { projectConstants, projectTableColumns } from '../../consumable/constants/projects'
-import { type Project, type ProjectList, type Data } from '../../consumable/models/projects'
+import { type Project, type Data } from '../../consumable/models/projects'
 
 export default defineComponent({
   data(): Data {
     return {
-      projects: <ProjectList>{ company: [], personal: [] },
+      projects: { company: [], personal: [] },
       isPersonalProjectEmpty: false,
       IsCompanyProjectEmpty: false
     }
@@ -22,7 +22,7 @@ export default defineComponent({
   methods: {
     // Mehod to fetch company projects
     fetchCompanyProjects(tags: Array<String>) {
-      let req = <Query>{
+      let req: Query = {
         operation: DBOperations.FETCH,
         table: projectConstants.SUPABASE_TABLE_PROJECTS
       }
@@ -50,13 +50,14 @@ export default defineComponent({
           }
         })
         .catch((err: Error) => {
+          console.log(err)
           eventBus.emit('notify', 'error getting company projects')
         })
     },
 
     // Mehod to fetch personal projects
     fetchPersonalProjects(tags: Array<String>) {
-      let req = <Query>{
+      let req: Query = {
         operation: DBOperations.FETCH,
         table: projectConstants.SUPABASE_TABLE_PROJECTS
       }
@@ -83,6 +84,7 @@ export default defineComponent({
           }
         })
         .catch((err: Error) => {
+          console.log(err)
           eventBus.emit('notify', 'error getting personal projects')
         })
     }

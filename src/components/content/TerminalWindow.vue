@@ -1,16 +1,14 @@
 <script lang="ts">
-import { defineComponent } from 'vue'
-
-export default {};
+export default {}
 </script>
 
 <template>
-    <div class="terminal"></div>
+  <div class="terminal"></div>
 </template>
 
 <style scoped>
 .terminal {
-    height: 200px;
-    background-color: black;
+  height: 200px;
+  background-color: black;
 }
 </style>
