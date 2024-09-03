@@ -1,19 +1,51 @@
 <script lang="ts">
-export default {};
+import { type Subscription } from '@supabase/supabase-js'
 
+import supabase from './components/consumable/externals/supabase'
+import eventBus from './components/consumable/eventBus'
+
+const authEventCallBack = (event: string) => {
+  if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+    eventBus.emit('authEvent', true)
+  } else if (event === 'SIGNED_OUT') {
+    eventBus.emit('authEvent', false)
+  }
+}
+
+interface Main {
+  supabaseEventSubscription?: Subscription
+}
+
+export default {
+  data(): Main {
+    return {
+      supabaseEventSubscription: undefined
+    }
+  },
+  beforeMount() {
+    this.supabaseEventSubscription = supabase.OnAuthEventChange(authEventCallBack)
+  },
+  beforeUnmount() {
+    if (this.supabaseEventSubscription) {
+      this.supabaseEventSubscription.unsubscribe()
+    }
+  }
+}
 </script>
 
 <template>
   <div class="container-fluid">
+    <push-notifications></push-notifications>
+    <authentication-window></authentication-window>
     <div class="header">
-      <portfolio-header></portfolio-header>
+      <header-layout></header-layout>
     </div>
     <div class="row section">
-      <side-menu></side-menu>
-      <portfolio-content></portfolio-content>
+      <primary-nav></primary-nav>
+      <main-content></main-content>
     </div>
     <div class="footer">
-      <portfolio-footer></portfolio-footer>
+      <footer-layout></footer-layout>
     </div>
   </div>
 </template>
@@ -62,11 +94,11 @@ body {
 }
 
 .footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    height: 25px;
-    width: 100%;
-    background-color: #0279CB;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  height: 25px;
+  width: 100%;
+  background-color: #0279cb;
 }
 </style>
