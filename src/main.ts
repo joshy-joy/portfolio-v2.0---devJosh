@@ -1,10 +1,10 @@
 import { createApp } from 'vue'
-import App from './App.vue'
+
 import 'bootstrap/dist/css/bootstrap.css'
-import 'bootstrap-vue/dist/bootstrap-vue.css'
 import './assets/css/common.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
+import App from './App.vue'
 import router from './routes/router'
 
 import HeaderLayout from './components/layout/HeaderLayout.vue'
