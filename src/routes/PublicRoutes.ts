@@ -8,7 +8,7 @@ const PublicRoutes = [
   { path: '/', component: HomePage },
   { path: '/about', component: AboutPage },
   { path: '/projects', component: ProjectsPage },
-  { path: '/blogs', component: BlogsPage },
+  { path: '/blog/:id', component: BlogsPage },
   { path: '/contact', component: ContactPage }
 ]
 

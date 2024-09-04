@@ -1,295 +1,130 @@
 <script lang="ts">
-export default {
-};
+import { defineComponent } from 'vue'
+
+import hljs from 'highlight.js'
+
+import supabase, {
+  DBOperations,
+  FilterTypes,
+  type Query,
+  type Response,
+  type QueryFilter
+} from '../../consumable/externals/supabase'
+import { blogsConstants, blogsTableColumns } from '../../consumable/constants/blogs'
+import { type Blog } from '../../consumable/models/blogs'
+import eventBus from '../../consumable/eventBus'
+
+interface BlogPageType {
+  blog: Blog
+}
+
+export default defineComponent({
+  data(): BlogPageType {
+    return {
+      blog: {}
+    }
+  },
+  methods: {
+    getBlog() {
+      const filter: Array<QueryFilter> = [
+        {
+          type: FilterTypes.EQ,
+          column: blogsTableColumns.ID,
+          value: this.$route.params.id
+        }
+      ]
+      let query: Query = {
+        operation: DBOperations.FETCH,
+        table: blogsConstants.SUPABASE_TABLE_BLOGS,
+        columns: [
+          blogsTableColumns.ID,
+          blogsTableColumns.IMAGE,
+          blogsTableColumns.NAME,
+          blogsTableColumns.UPDATED_AT,
+          blogsTableColumns.CONTENT,
+          blogsTableColumns.TAG
+        ],
+        filters: filter
+      }
+      supabase
+        .executeQuery(query)
+        .then((response: Response) => {
+          if (response.data) {
+            let item = response.data[0] as Blog
+            this.blog = {
+              id: item.id,
+              name: item.name,
+              image: item.image,
+              updated_at: item.updated_at?.slice(0, 10),
+              content: item.content,
+              tags: item.tags
+            }
+          }
+        })
+        .catch((err: Error) => {
+          eventBus.emit('notify', err.message)
+        })
+    },
+    highlightPost() {
+      document.querySelectorAll('pre').forEach((block) => {
+        hljs.highlightBlock(block)
+      })
+    }
+  },
+  beforeMount() {
+    this.getBlog()
+  },
+  mounted() {
+    this.highlightPost()
+  }
+})
 </script>
 
 <template>
-    <div class="container-fluid">
-        <div class="row cols-1">
-            <div class="col">
-                <h1>Using WebAssembly for Extension Development</h1>
-                <p>May 8, 2024 by Dirk Bäumer</p>
-                <p>Visual Studio Code supports the execution of WASM binaries through the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.wasm-wasi-core" class="external-link" target="_blank">WebAssembly Execution Engine</a> extension. The primary use case is to compile programs written in C/C++ or Rust into WebAssembly, and then run these programs directly in VS Code. A notable example is <a href="https://vscodeedu.com/" class="external-link" target="_blank">Visual Studio Code for Education</a>, which utilizes this support to run the Python interpreter in VS Code for the Web. This <a href="https://code.visualstudio.com/blogs/2023/06/05/vscode-wasm-wasi">blog post</a> provides detailed insights into how this is implemented.</p>
-                <p>In January 2024, the Bytecode Alliance launched the <a href="https://bytecodealliance.org/articles/WASI-0.2" class="external-link" target="_blank">WASI 0.2 preview</a>. A key technology in the WASI 0.2 preview is the <a href="https://github.com/WebAssembly/component-model/" class="external-link" target="_blank">Component Model</a>. The WebAssembly Component Model streamlines interactions between WebAssembly components and their host environments by standardizing interfaces, data types, and module composition. This standardization is facilitated through the use of a WIT (<a href="https://component-model.bytecodealliance.org/design/wit.html" class="external-link" target="_blank">WASM Interface Type</a>) file. WIT files help describe the interactions between a JavaScript/TypeScript extension (the host) and a WebAssembly component performing computations coded in another language, such as Rust or C/C++.</p>
-                <p>This blog post outlines how developers can leverage the component model to integrate a WebAssembly library into their extension. We focus on three use cases: (a) implementing a library using WebAssembly and calling it from extension code in JavaScript/TypeScript, (b) calling the VS Code API from WebAssembly code, and (c) demonstrating how to use resources to encapsulate and manage stateful objects in either WebAssembly or TypeScript code.</p>
-                <p>The examples require that you have the latest versions of the following tools installed, alongside VS Code and NodeJS: <a href="https://www.rust-lang.org/" class="external-link" target="_blank">rust compiler toolchain</a>, <a href="https://github.com/bytecodealliance/wasm-tools" class="external-link" target="_blank">wasm-tools</a>, and <a href="https://github.com/bytecodealliance/wit-bindgen" class="external-link" target="_blank">wit-bindgen</a>.</p>
-                <p>I also want to say thank you to L. Pereira and Luke Wagner from <a href="https://www.fastly.com/" class="external-link" target="_blank">Fastly</a> for their valuable feedback on this article.</p>
-                <h2 id="_a-calculator-in-rust" data-needslink="_a-calculator-in-rust"><a class="hash-link" href="#_a-calculator-in-rust">A Calculator in Rust</a></h2>
-                <p>In the first example, we demonstrate how a developer can integrate a library written in Rust into a VS Code extension. As previously mentioned, components are described using a WIT file. In our example, the library performs simple operations such as addition, subtraction, multiplication, and division. The corresponding WIT file is shown below:</p>
-                <p>The Rust tool <a href="https://github.com/bytecodealliance/wit-bindgen" class="external-link" target="_blank"><code>wit-bindgen</code></a> is utilized to generate a Rust binding for the calculator. There are two ways to use this tool:</p>
-                <ul>
-                <li>
-                <p>As a procedural macro that generates the bindings directly within the implementation file. This method is standard but has the disadvantage of not allowing the inspection of the generated bindings code.</p>
-                </li>
-                <li>
-                <p>As a <a href="https://github.com/bytecodealliance/wit-bindgen?tab=readme-ov-file#cli-installation" class="external-link" target="_blank">command line tool</a> that creates a bindings file on disk. This approach is exemplified in the code found in the <a href="https://github.com/microsoft/vscode-extension-samples/tree/main/wasm-component-model-resource" class="external-link" target="_blank">VS Code extension sample repository</a> for the resources example below.</p>
-                </li>
-                </ul>
-                <p>The corresponding Rust file, which uses the <code>wit-bindgen</code> tool as a procedural macro, appears as follows:</p>
-                <pre class="shiki" style="background-color: #1e1e1e"><code><span class="line"><span style="color: #6A9955">// Use a procedural macro to generate bindings for the world we specified in</span></span>
-                <span class="line"><span style="color: #6A9955">// `calculator.wit`</span></span>
-                <span class="line"><span style="color: #4EC9B0">wit_bindgen</span><span style="color: #D4D4D4">::</span><span style="color: #DCDCAA">generate!</span><span style="color: #BBBBBB">({</span></span>
-                <span class="line"><span style="color: #6A9955">	// the name of the world in the `*.wit` input file</span></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #9CDCFE">world</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #CE9178">"calculator"</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">});</span></span>
-                <span class="line"></span></code></pre>
-                <p>However, compiling the Rust file to WebAssembly using the command <code>cargo build --target wasm32-unknown-unknown</code> results in compile errors due to the missing implementation of the exported <code>calc</code> function. Below is a simple implementation of the <code>calc</code> function:</p>
-                <pre class="shiki" style="background-color: #1e1e1e"><code><span class="line"><span style="color: #6A9955">// Use a procedural macro to generate bindings for the world we specified in</span></span>
-                <span class="line"><span style="color: #6A9955">// `calculator.wit`</span></span>
-                <span class="line"><span style="color: #4EC9B0">wit_bindgen</span><span style="color: #D4D4D4">::</span><span style="color: #DCDCAA">generate!</span><span style="color: #BBBBBB">({</span></span>
-                <span class="line"><span style="color: #6A9955">	// the name of the world in the `*.wit` input file</span></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #9CDCFE">world</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #CE9178">"calculator"</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">});</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #569CD6">struct</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">Calculator</span><span style="color: #BBBBBB">;</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #569CD6">impl</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">Guest</span><span style="color: #BBBBBB"> </span><span style="color: #C586C0">for</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">Calculator</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #569CD6">fn</span><span style="color: #BBBBBB"> </span><span style="color: #DCDCAA">calc</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">op</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">Operation</span><span style="color: #BBBBBB">) </span><span style="color: #D4D4D4">-&gt;</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">u32</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">		</span><span style="color: #C586C0">match</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">op</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">			</span><span style="color: #4EC9B0">Operation</span><span style="color: #D4D4D4">::</span><span style="color: #DCDCAA">Add</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">operands</span><span style="color: #BBBBBB">) </span><span style="color: #D4D4D4">=&gt;</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">operands</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">left </span><span style="color: #D4D4D4">+</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">operands</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">right,</span></span>
-                <span class="line"><span style="color: #BBBBBB">			</span><span style="color: #4EC9B0">Operation</span><span style="color: #D4D4D4">::</span><span style="color: #DCDCAA">Sub</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">operands</span><span style="color: #BBBBBB">) </span><span style="color: #D4D4D4">=&gt;</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">operands</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">left </span><span style="color: #D4D4D4">-</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">operands</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">right,</span></span>
-                <span class="line"><span style="color: #BBBBBB">			</span><span style="color: #4EC9B0">Operation</span><span style="color: #D4D4D4">::</span><span style="color: #DCDCAA">Mul</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">operands</span><span style="color: #BBBBBB">) </span><span style="color: #D4D4D4">=&gt;</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">operands</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">left </span><span style="color: #D4D4D4">*</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">operands</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">right,</span></span>
-                <span class="line"><span style="color: #BBBBBB">			</span><span style="color: #4EC9B0">Operation</span><span style="color: #D4D4D4">::</span><span style="color: #DCDCAA">Div</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">operands</span><span style="color: #BBBBBB">) </span><span style="color: #D4D4D4">=&gt;</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">operands</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">left </span><span style="color: #D4D4D4">/</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">operands</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">right,</span></span>
-                <span class="line"><span style="color: #BBBBBB">		}</span></span>
-                <span class="line"><span style="color: #BBBBBB">	}</span></span>
-                <span class="line"><span style="color: #BBBBBB">}</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #6A9955">// Export the Calculator to the extension code.</span></span>
-                <span class="line"><span style="color: #DCDCAA">export!</span><span style="color: #BBBBBB">(</span><span style="color: #4EC9B0">Calculator</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"></span></code></pre>
-                <p>The <code>export!(Calculator);</code> statement at the end of the file exports the <code>Calculator</code> from the WebAssembly code to enable the extension to call the API.</p>
-                <p>The <code>wit2ts</code> tool is used to generate the necessary TypeScript bindings for interacting with the WebAssembly code within a VS Code extension. This tool was developed by the VS Code team to meet the specific requirements of the VS Code extension architecture, mainly because:</p>
-                <ul>
-                <li>The VS Code API is only accessible within the extension host worker. Any additional worker spawned from the extension host worker lacks access to the VS Code API, which contrasts with environments like NodeJS or the browser, where each worker typically has access to almost all the runtime APIs.</li>
-                <li>Multiple extensions share the same extension host worker. Extensions should avoid performing any long-running synchronous computations on that worker.</li>
-                </ul>
-                <p>These architectural requirements were already in place when we implemented the <a href="https://code.visualstudio.com/blogs/2023/06/05/vscode-wasm-wasi">WASI Preview 1 for VS Code</a>. However, our initial implementation was manually written. Anticipating broader adoption of the component model, we developed a tool to facilitate the integration of components with their VS Code-specific host implementations.</p>
-                <p>The command <code>wit2ts --outDir ./src ./wit</code> produces a <code>calculator.ts</code> file in the <code>src</code> folder, containing the TypeScript bindings for the WebAssembly code. A simple extension that utilizes these bindings would look like this:</p>
-                <pre class="shiki" style="background-color: #1e1e1e"><code><span class="line"><span style="color: #C586C0">import</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">*</span><span style="color: #BBBBBB"> </span><span style="color: #C586C0">as</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">vscode</span><span style="color: #BBBBBB"> </span><span style="color: #C586C0">from</span><span style="color: #BBBBBB"> </span><span style="color: #CE9178">'vscode'</span><span style="color: #BBBBBB">;</span></span>
-                <span class="line"><span style="color: #C586C0">import</span><span style="color: #BBBBBB"> { </span><span style="color: #9CDCFE">WasmContext</span><span style="color: #BBBBBB">, </span><span style="color: #9CDCFE">Memory</span><span style="color: #BBBBBB"> } </span><span style="color: #C586C0">from</span><span style="color: #BBBBBB"> </span><span style="color: #CE9178">'@vscode/wasm-component-model'</span><span style="color: #BBBBBB">;</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #6A9955">// Import the code generated by wit2ts</span></span>
-                <span class="line"><span style="color: #C586C0">import</span><span style="color: #BBBBBB"> { </span><span style="color: #9CDCFE">calculator</span><span style="color: #BBBBBB">, </span><span style="color: #9CDCFE">Types</span><span style="color: #BBBBBB"> } </span><span style="color: #C586C0">from</span><span style="color: #BBBBBB"> </span><span style="color: #CE9178">'./calculator'</span><span style="color: #BBBBBB">;</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #C586C0">export</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">async</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">function</span><span style="color: #BBBBBB"> </span><span style="color: #DCDCAA">activate</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">context</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">vscode</span><span style="color: #BBBBBB">.</span><span style="color: #4EC9B0">ExtensionContext</span><span style="color: #BBBBBB">)</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">Promise</span><span style="color: #BBBBBB">&lt;</span><span style="color: #4EC9B0">void</span><span style="color: #BBBBBB">&gt; {</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #6A9955">// The channel for printing the result.</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">channel</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">vscode</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">window</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">createOutputChannel</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">'Calculator'</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #9CDCFE">context</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">subscriptions</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">push</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">channel</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #6A9955">// Load the Wasm module</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">filename</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">vscode</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">Uri</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">joinPath</span><span style="color: #BBBBBB">(</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #9CDCFE">context</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">extensionUri</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #CE9178">'target'</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #CE9178">'wasm32-unknown-unknown'</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #CE9178">'debug'</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #CE9178">'calculator.wasm'</span></span>
-                <span class="line"><span style="color: #BBBBBB">  );</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">bits</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #C586C0">await</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">vscode</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">workspace</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">fs</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">readFile</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">filename</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">module</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #C586C0">await</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">WebAssembly</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">compile</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">bits</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #6A9955">// The context for the WASM module</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">wasmContext</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">WasmContext</span><span style="color: #BBBBBB">.</span><span style="color: #4EC9B0">Default</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">new</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">WasmContext</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">Default</span><span style="color: #BBBBBB">();</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #6A9955">// Instantiate the module</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">instance</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #C586C0">await</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">WebAssembly</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">instantiate</span><span style="color: #BBBBBB">(</span><span style="color: #4EC9B0">module</span><span style="color: #BBBBBB">, {});</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #6A9955">// Bind the WASM memory to the context</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #9CDCFE">wasmContext</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">initialize</span><span style="color: #BBBBBB">(</span><span style="color: #569CD6">new</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">Memory</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">Default</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">instance</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">exports</span><span style="color: #BBBBBB">));</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #6A9955">// Bind the TypeScript Api</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">api</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">calculator</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">_</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">exports</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">bind</span><span style="color: #BBBBBB">(</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #9CDCFE">instance</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">exports</span><span style="color: #BBBBBB"> </span><span style="color: #C586C0">as</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">calculator</span><span style="color: #BBBBBB">.</span><span style="color: #4EC9B0">_</span><span style="color: #BBBBBB">.</span><span style="color: #4EC9B0">Exports</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #9CDCFE">wasmContext</span></span>
-                <span class="line"><span style="color: #BBBBBB">  );</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #9CDCFE">context</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">subscriptions</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">push</span><span style="color: #BBBBBB">(</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #9CDCFE">vscode</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">commands</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">registerCommand</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">'vscode-samples.wasm-component-model.run'</span><span style="color: #BBBBBB">, () </span><span style="color: #569CD6">=&gt;</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">      </span><span style="color: #9CDCFE">channel</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">show</span><span style="color: #BBBBBB">();</span></span>
-                <span class="line"><span style="color: #BBBBBB">      </span><span style="color: #9CDCFE">channel</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">appendLine</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">'Running calculator example'</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">      </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">add</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">Types</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">Operation</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">Add</span><span style="color: #BBBBBB">({ </span><span style="color: #9CDCFE">left:</span><span style="color: #BBBBBB"> </span><span style="color: #B5CEA8">1</span><span style="color: #BBBBBB">, </span><span style="color: #9CDCFE">right:</span><span style="color: #BBBBBB"> </span><span style="color: #B5CEA8">2</span><span style="color: #BBBBBB"> });</span></span>
-                <span class="line"><span style="color: #BBBBBB">      </span><span style="color: #9CDCFE">channel</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">appendLine</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">`Add </span><span style="color: #569CD6">${</span><span style="color: #9CDCFE">api</span><span style="color: #D4D4D4">.</span><span style="color: #DCDCAA">calc</span><span style="color: #D4D4D4">(</span><span style="color: #9CDCFE">add</span><span style="color: #D4D4D4">)</span><span style="color: #569CD6">}</span><span style="color: #CE9178">`</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">      </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">sub</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">Types</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">Operation</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">Sub</span><span style="color: #BBBBBB">({ </span><span style="color: #9CDCFE">left:</span><span style="color: #BBBBBB"> </span><span style="color: #B5CEA8">10</span><span style="color: #BBBBBB">, </span><span style="color: #9CDCFE">right:</span><span style="color: #BBBBBB"> </span><span style="color: #B5CEA8">8</span><span style="color: #BBBBBB"> });</span></span>
-                <span class="line"><span style="color: #BBBBBB">      </span><span style="color: #9CDCFE">channel</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">appendLine</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">`Sub </span><span style="color: #569CD6">${</span><span style="color: #9CDCFE">api</span><span style="color: #D4D4D4">.</span><span style="color: #DCDCAA">calc</span><span style="color: #D4D4D4">(</span><span style="color: #9CDCFE">sub</span><span style="color: #D4D4D4">)</span><span style="color: #569CD6">}</span><span style="color: #CE9178">`</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">      </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">mul</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">Types</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">Operation</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">Mul</span><span style="color: #BBBBBB">({ </span><span style="color: #9CDCFE">left:</span><span style="color: #BBBBBB"> </span><span style="color: #B5CEA8">3</span><span style="color: #BBBBBB">, </span><span style="color: #9CDCFE">right:</span><span style="color: #BBBBBB"> </span><span style="color: #B5CEA8">7</span><span style="color: #BBBBBB"> });</span></span>
-                <span class="line"><span style="color: #BBBBBB">      </span><span style="color: #9CDCFE">channel</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">appendLine</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">`Mul </span><span style="color: #569CD6">${</span><span style="color: #9CDCFE">api</span><span style="color: #D4D4D4">.</span><span style="color: #DCDCAA">calc</span><span style="color: #D4D4D4">(</span><span style="color: #9CDCFE">mul</span><span style="color: #D4D4D4">)</span><span style="color: #569CD6">}</span><span style="color: #CE9178">`</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">      </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">div</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">Types</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">Operation</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">Div</span><span style="color: #BBBBBB">({ </span><span style="color: #9CDCFE">left:</span><span style="color: #BBBBBB"> </span><span style="color: #B5CEA8">10</span><span style="color: #BBBBBB">, </span><span style="color: #9CDCFE">right:</span><span style="color: #BBBBBB"> </span><span style="color: #B5CEA8">2</span><span style="color: #BBBBBB"> });</span></span>
-                <span class="line"><span style="color: #BBBBBB">      </span><span style="color: #9CDCFE">channel</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">appendLine</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">`Div </span><span style="color: #569CD6">${</span><span style="color: #9CDCFE">api</span><span style="color: #D4D4D4">.</span><span style="color: #DCDCAA">calc</span><span style="color: #D4D4D4">(</span><span style="color: #9CDCFE">div</span><span style="color: #D4D4D4">)</span><span style="color: #569CD6">}</span><span style="color: #CE9178">`</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">    })</span></span>
-                <span class="line"><span style="color: #BBBBBB">  );</span></span>
-                <span class="line"><span style="color: #BBBBBB">}</span></span>
-                <span class="line"></span></code></pre>
-                <p>When you compile and run the above code in VS Code for the Web, it produces the following output in the <code>Calculator</code> channel:</p>
-                <p>You can find the full source code for this example in the <a href="https://insiders.vscode.dev/github/microsoft/vscode-extension-samples/blob/main/wasm-component-model/src/extension.ts#L1" class="external-link" target="_blank">VS Code extension sample repository</a>.</p>
-                <h2 id="_inside-vscodewasmcomponentmodel" data-needslink="_inside-vscodewasmcomponentmodel"><a class="hash-link" href="#_inside-vscodewasmcomponentmodel">Inside @vscode/wasm-component-model</a></h2>
-                <p>Inspecting the source code generated by the <code>wit2ts</code> tool reveals its dependency on the <code>@vscode/wasm-component-model</code> npm module. This module serves as the VS Code implementation of the <a href="https://github.com/WebAssembly/component-model/blob/main/design/mvp/CanonicalABI.md" class="external-link" target="_blank">component model's canonical ABI</a> and draws inspiration from corresponding Python code. While it's not necessary to comprehend the internals of the component model to understand this blog post, we will shed some light on its workings, particularly regarding how data is passed between JavaScript/TypeScript and WebAssembly code.</p>
-                <p>Unlike other tools such as <a href="https://github.com/bytecodealliance/wit-bindgen" class="external-link" target="_blank">wit-bindgen</a> or <a href="https://github.com/bytecodealliance/jco" class="external-link" target="_blank">jco</a> that generate bindings for WIT files, <code>wit2ts</code> creates a meta model, which can then be used to generate bindings at runtime for various use cases. This flexibility allows us to meet the architectural requirements for extension development within VS Code. By using this approach, we can "promisify" the bindings and enable the running of WebAssembly code in workers. We employ this mechanism to implement the <a href="https://bytecodealliance.org/articles/WASI-0.2" class="external-link" target="_blank">WASI 0.2 preview</a> for VS Code.</p>
-                <p>You might have noticed that when generating the binding, functions are referenced using names like <code>calculator._.imports.create</code> (note the underscore). To avoid name collisions with symbols in the WIT file (for example, there could be a type definition named <code>imports</code>), API functions are placed in an <code>_</code> namespace. The meta model itself resides in a <code>$</code> namespace. Thus, <code>calculator.$.exports.calc</code> represents the metadata for the exported <code>calc</code> function.</p>
-                <p>In the above example, the <code>add</code> operation parameter passed into the <code>calc</code> function consists of three fields: the operation code, the left value, and the right value. According to the component model's canonical ABI, arguments are passed by value. It also outlines how the data is serialized, passed to WebAssembly functions, and deserialized on the other side. This process results in two operation objects: one on the JavaScript heap and another in the linear WebAssembly memory. The following diagram illustrates this:</p>
-                <p>The table below lists the available WIT types, their mapping onto JavaScript objects in the VS Code component model implementation, and the corresponding TypeScript types used.</p>
-                <p>It is important to note that the component model does not support low-level (C-style) pointers. As such, you cannot pass object graphs or recursive data structures. In this respect, it shares the same limitations as <a href="https://en.wikipedia.org/wiki/JSON" class="external-link" target="_blank">JSON</a>. To minimize data copying, the component model introduces the concept of resources, which we will explore in more detail in a forthcoming section of this blog post.</p>
-                <p>The <a href="https://github.com/bytecodealliance/jco" class="external-link" target="_blank">jco project</a> also supports generating JavaScript/TypeScript bindings for WebAssembly components using the <code>type</code> command. As mentioned earlier, we developed our own tooling to meet the specific needs of VS Code. However, we hold bi-weekly meetings with the jco team to ensure alignment across the tools wherever possible. A fundamental requirement is that both tools should use the same JavaScript and TypeScript representations for WIT data types. We are also exploring possibilities to share code between the two tools.</p>
-                <h2 id="_calling-typescript-from-webassembly-code" data-needslink="_calling-typescript-from-webassembly-code"><a class="hash-link" href="#_calling-typescript-from-webassembly-code">Calling TypeScript from WebAssembly code</a></h2>
-                <p>WIT files describe the interaction between the host (a VS Code extension) and the WebAssembly code, facilitating bi-directional communication. In our example, this feature allows the WebAssembly code to log traces of its activities. To enable this, we modify the WIT file as follows:</p>
-                <p>On the Rust side, we can now call the log function:</p>
-                <pre class="shiki" style="background-color: #1e1e1e"><code><span class="line"><span style="color: #569CD6">fn</span><span style="color: #BBBBBB"> </span><span style="color: #DCDCAA">calc</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">op</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">Operation</span><span style="color: #BBBBBB">) </span><span style="color: #D4D4D4">-&gt;</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">u32</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #DCDCAA">log</span><span style="color: #BBBBBB">(</span><span style="color: #D4D4D4">&amp;</span><span style="color: #DCDCAA">format!</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">"Starting calculation: {:?}"</span><span style="color: #BBBBBB">, </span><span style="color: #9CDCFE">op</span><span style="color: #BBBBBB">));</span></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #569CD6">let</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">result</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #C586C0">match</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">op</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #6A9955">		// ...</span></span>
-                <span class="line"><span style="color: #BBBBBB">	};</span></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #DCDCAA">log</span><span style="color: #BBBBBB">(</span><span style="color: #D4D4D4">&amp;</span><span style="color: #DCDCAA">format!</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">"Finished calculation: {:?}"</span><span style="color: #BBBBBB">, </span><span style="color: #9CDCFE">op</span><span style="color: #BBBBBB">));</span></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #9CDCFE">result</span></span>
-                <span class="line"><span style="color: #BBBBBB">}</span></span>
-                <span class="line"></span></code></pre>
-                <p>On the TypeScript side, the only action required from an extension developer is to provide an implementation of the log function. The VS Code component model then facilitates the generation of the necessary bindings, which are to be passed as imports to the WebAssembly instance.</p>
-                <pre class="shiki" style="background-color: #1e1e1e"><code><span class="line"><span style="color: #C586C0">export</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">async</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">function</span><span style="color: #BBBBBB"> </span><span style="color: #DCDCAA">activate</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">context</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">vscode</span><span style="color: #BBBBBB">.</span><span style="color: #4EC9B0">ExtensionContext</span><span style="color: #BBBBBB">)</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">Promise</span><span style="color: #BBBBBB">&lt;</span><span style="color: #4EC9B0">void</span><span style="color: #BBBBBB">&gt; {</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #6A9955">// ...</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #6A9955">// The channel for printing the log.</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">log</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">vscode</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">window</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">createOutputChannel</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">'Calculator - Log'</span><span style="color: #BBBBBB">, { </span><span style="color: #9CDCFE">log:</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">true</span><span style="color: #BBBBBB"> });</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #9CDCFE">context</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">subscriptions</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">push</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">log</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #6A9955">// The implementation of the log function that is called from WASM</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">service</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">calculator</span><span style="color: #BBBBBB">.</span><span style="color: #4EC9B0">Imports</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #DCDCAA">log</span><span style="color: #9CDCFE">:</span><span style="color: #BBBBBB"> (</span><span style="color: #9CDCFE">msg</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">string</span><span style="color: #BBBBBB">) </span><span style="color: #569CD6">=&gt;</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">      </span><span style="color: #9CDCFE">log</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">info</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">msg</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">    }</span></span>
-                <span class="line"><span style="color: #BBBBBB">  };</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #6A9955">// Create the bindings to import the log function into the WASM module</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">imports</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">calculator</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">_</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">imports</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">create</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">service</span><span style="color: #BBBBBB">, </span><span style="color: #9CDCFE">wasmContext</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #6A9955">// Instantiate the module</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">instance</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #C586C0">await</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">WebAssembly</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">instantiate</span><span style="color: #BBBBBB">(</span><span style="color: #4EC9B0">module</span><span style="color: #BBBBBB">, </span><span style="color: #9CDCFE">imports</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #6A9955">// ...</span></span>
-                <span class="line"><span style="color: #BBBBBB">}</span></span>
-                <span class="line"></span></code></pre>
-                <p>Compared to the first example, the <code>WebAssembly.instantiate</code> call now includes the result of <code>calculator._.imports.create(service, wasmContext)</code> as a second argument. This <code>imports.create</code> call generates the low-level WASM bindings from the service implementation. In the initial example, we passed an empty object literal since no imports were necessary. This time, we execute the extension in the VS Code desktop environment under the debugger. Thanks to the excellent work of <a href="https://github.com/connor4312" class="external-link" target="_blank">Connor Peet</a>, it is now possible to set breakpoints in the Rust code and step through it using the VS Code debugger.</p>
-                <h2 id="_using-component-model-resources" data-needslink="_using-component-model-resources"><a class="hash-link" href="#_using-component-model-resources">Using Component Model Resources</a></h2>
-                <p>The WebAssembly component model introduces the concept of resources, which provide a standardized mechanism for encapsulating and managing state. This state is managed on one side of the call boundary (for example, in TypeScript code) and accessed and manipulated on the other side (for instance, in WebAssembly code). Resources are extensively used in the <a href="https://bytecodealliance.org/articles/WASI-0.2" class="external-link" target="_blank">WASI preview 0.2</a> APIs, with file descriptors being a typical example. In this setup, the state is managed by the extension host and accessed and manipulated by the WebAssembly code.</p>
-                <p>Resources can also function in the reverse direction, where their state is managed by the WebAssembly code and accessed and manipulated by the extension code. This approach is particularly beneficial for VS Code to implement stateful services in WebAssembly, which are then accessed from the TypeScript side. In the example below, we define a resource that implements a calculator supporting the <a href="https://en.wikipedia.org/wiki/Reverse_Polish_notation" class="external-link" target="_blank">reverse Polish notation</a>, similar to those used in <a href="https://www.hp.com/" class="external-link" target="_blank">Hewlett-Packard</a> hand-held calculators.</p>
-                <p>Below is a simple implementation of the calculator resource in Rust:</p>
-                <pre class="shiki" style="background-color: #1e1e1e"><code><span class="line"><span style="color: #569CD6">impl</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">EngineImpl</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #569CD6">fn</span><span style="color: #BBBBBB"> </span><span style="color: #DCDCAA">new</span><span style="color: #BBBBBB">() </span><span style="color: #D4D4D4">-&gt;</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">Self</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">		</span><span style="color: #4EC9B0">EngineImpl</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">			</span><span style="color: #9CDCFE">left</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">None</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">			</span><span style="color: #9CDCFE">right</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">None</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">		}</span></span>
-                <span class="line"><span style="color: #BBBBBB">	}</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #569CD6">fn</span><span style="color: #BBBBBB"> </span><span style="color: #DCDCAA">push_operand</span><span style="color: #BBBBBB">(</span><span style="color: #D4D4D4">&amp;</span><span style="color: #569CD6">mut</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">self</span><span style="color: #BBBBBB">, </span><span style="color: #9CDCFE">operand</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">u32</span><span style="color: #BBBBBB">) {</span></span>
-                <span class="line"><span style="color: #BBBBBB">		</span><span style="color: #C586C0">if</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">self</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">left </span><span style="color: #D4D4D4">==</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">None</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">			</span><span style="color: #569CD6">self</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">left </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">Some</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">operand</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">		} </span><span style="color: #C586C0">else</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">			</span><span style="color: #569CD6">self</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">right </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">Some</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">operand</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">		}</span></span>
-                <span class="line"><span style="color: #BBBBBB">	}</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #569CD6">fn</span><span style="color: #BBBBBB"> </span><span style="color: #DCDCAA">push_operation</span><span style="color: #BBBBBB">(</span><span style="color: #D4D4D4">&amp;</span><span style="color: #569CD6">mut</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">self</span><span style="color: #BBBBBB">, </span><span style="color: #9CDCFE">operation</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">Operation</span><span style="color: #BBBBBB">) {</span></span>
-                <span class="line"><span style="color: #BBBBBB">        </span><span style="color: #569CD6">let</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">left</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">self</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">left</span><span style="color: #D4D4D4">.</span><span style="color: #DCDCAA">unwrap</span><span style="color: #BBBBBB">();</span></span>
-                <span class="line"><span style="color: #BBBBBB">        </span><span style="color: #569CD6">let</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">right</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">self</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">right</span><span style="color: #D4D4D4">.</span><span style="color: #DCDCAA">unwrap</span><span style="color: #BBBBBB">();</span></span>
-                <span class="line"><span style="color: #BBBBBB">        </span><span style="color: #569CD6">self</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">left </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">Some</span><span style="color: #BBBBBB">(</span><span style="color: #C586C0">match</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">operation</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">			</span><span style="color: #4EC9B0">Operation</span><span style="color: #D4D4D4">::</span><span style="color: #4EC9B0">Add</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=&gt;</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">left</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">+</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">right</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">			</span><span style="color: #4EC9B0">Operation</span><span style="color: #D4D4D4">::</span><span style="color: #4EC9B0">Sub</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=&gt;</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">left</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">-</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">right</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">			</span><span style="color: #4EC9B0">Operation</span><span style="color: #D4D4D4">::</span><span style="color: #4EC9B0">Mul</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=&gt;</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">left</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">*</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">right</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">			</span><span style="color: #4EC9B0">Operation</span><span style="color: #D4D4D4">::</span><span style="color: #4EC9B0">Div</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=&gt;</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">left</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">/</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">right</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">		});</span></span>
-                <span class="line"><span style="color: #BBBBBB">	}</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #569CD6">fn</span><span style="color: #BBBBBB"> </span><span style="color: #DCDCAA">execute</span><span style="color: #BBBBBB">(</span><span style="color: #D4D4D4">&amp;</span><span style="color: #569CD6">mut</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">self</span><span style="color: #BBBBBB">) </span><span style="color: #D4D4D4">-&gt;</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">u32</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">		</span><span style="color: #569CD6">self</span><span style="color: #D4D4D4">.</span><span style="color: #BBBBBB">left</span><span style="color: #D4D4D4">.</span><span style="color: #DCDCAA">unwrap</span><span style="color: #BBBBBB">()</span></span>
-                <span class="line"><span style="color: #BBBBBB">	}</span></span>
-                <span class="line"><span style="color: #BBBBBB">}</span></span>
-                <span class="line"></span></code></pre>
-                <p>In TypeScript code, we bind the exports in the same manner as before. The only difference is that the binding process now provides us with a proxy class used to instantiate and manage a <code>calculator</code> resource within the WebAssembly code.</p>
-                <pre class="shiki" style="background-color: #1e1e1e"><code><span class="line"><span style="color: #6A9955">// Bind the JavaScript Api</span></span>
-                <span class="line"><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">api</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">calculator</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">_</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">exports</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">bind</span><span style="color: #BBBBBB">(</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #9CDCFE">instance</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">exports</span><span style="color: #BBBBBB"> </span><span style="color: #C586C0">as</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">calculator</span><span style="color: #BBBBBB">.</span><span style="color: #4EC9B0">_</span><span style="color: #BBBBBB">.</span><span style="color: #4EC9B0">Exports</span><span style="color: #BBBBBB">,</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #9CDCFE">wasmContext</span></span>
-                <span class="line"><span style="color: #BBBBBB">);</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #9CDCFE">context</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">subscriptions</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">push</span><span style="color: #BBBBBB">(</span></span>
-                <span class="line"><span style="color: #BBBBBB">  </span><span style="color: #9CDCFE">vscode</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">commands</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">registerCommand</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">'vscode-samples.wasm-component-model.run'</span><span style="color: #BBBBBB">, () </span><span style="color: #569CD6">=&gt;</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #9CDCFE">channel</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">show</span><span style="color: #BBBBBB">();</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #9CDCFE">channel</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">appendLine</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">'Running calculator example'</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #6A9955">// Create a new calculator engine</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">calculator</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">new</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">api</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">types</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">Engine</span><span style="color: #BBBBBB">();</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #6A9955">// Push some operands and operations</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #9CDCFE">calculator</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">pushOperand</span><span style="color: #BBBBBB">(</span><span style="color: #B5CEA8">10</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #9CDCFE">calculator</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">pushOperand</span><span style="color: #BBBBBB">(</span><span style="color: #B5CEA8">20</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #9CDCFE">calculator</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">pushOperation</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">Types</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">Operation</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">add</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #9CDCFE">calculator</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">pushOperand</span><span style="color: #BBBBBB">(</span><span style="color: #B5CEA8">2</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #9CDCFE">calculator</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">pushOperation</span><span style="color: #BBBBBB">(</span><span style="color: #9CDCFE">Types</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">Operation</span><span style="color: #BBBBBB">.</span><span style="color: #9CDCFE">mul</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #6A9955">// Calculate the result</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #569CD6">const</span><span style="color: #BBBBBB"> </span><span style="color: #4FC1FF">result</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">calculator</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">execute</span><span style="color: #BBBBBB">();</span></span>
-                <span class="line"><span style="color: #BBBBBB">    </span><span style="color: #9CDCFE">channel</span><span style="color: #BBBBBB">.</span><span style="color: #DCDCAA">appendLine</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">`Result: </span><span style="color: #569CD6">${</span><span style="color: #9CDCFE">result</span><span style="color: #569CD6">}</span><span style="color: #CE9178">`</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"><span style="color: #BBBBBB">  })</span></span>
-                <span class="line"><span style="color: #BBBBBB">);</span></span>
-                <span class="line"></span></code></pre>
-                <p>When you run the corresponding command, it prints <code>Result: 60</code> to the output channel. As mentioned earlier, the state of resources resides on one side of the call boundary and is accessed from the other side using handles. No data copying occurs, except for the arguments passed to methods that interact with the resources.</p>
-                <p>The full source code for this example is available in the <a href="https://insiders.vscode.dev/github/microsoft/vscode-extension-samples/blob/main/wasm-component-model-resource/src/extension.ts#L1" class="external-link" target="_blank">VS Code extension sample repository</a>.</p>
-                <h2 id="_using-vs-code-apis-directly-from-rust" data-needslink="_using-vs-code-apis-directly-from-rust"><a class="hash-link" href="#_using-vs-code-apis-directly-from-rust">Using VS Code APIs directly from Rust</a></h2>
-                <p>Component model resources can serve to encapsulate and manage state across WebAssembly components and the host. This capability allows us to utilize resources to expose the VS Code API canonically into WebAssembly code. The advantage of this approach lies in the fact that the entire extension can be authored in a language that compiles to WebAssembly. We have begun to explore this approach, and below is the source code of an extension written in Rust:</p>
-                <pre class="shiki" style="background-color: #1e1e1e"><code><span class="line"><span style="color: #569CD6">use</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">std</span><span style="color: #D4D4D4">::</span><span style="color: #4EC9B0">rc</span><span style="color: #D4D4D4">::</span><span style="color: #4EC9B0">Rc</span><span style="color: #BBBBBB">;</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">#[export_name </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #CE9178">"activate"</span><span style="color: #BBBBBB">]</span></span>
-                <span class="line"><span style="color: #569CD6">pub</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">fn</span><span style="color: #BBBBBB"> </span><span style="color: #DCDCAA">activate</span><span style="color: #BBBBBB">() </span><span style="color: #D4D4D4">-&gt;</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">vscode</span><span style="color: #D4D4D4">::</span><span style="color: #4EC9B0">Disposables</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #569CD6">let</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">mut</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">disposables</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">vscode</span><span style="color: #D4D4D4">::</span><span style="color: #4EC9B0">Disposables</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">vscode</span><span style="color: #D4D4D4">::</span><span style="color: #4EC9B0">Disposables</span><span style="color: #D4D4D4">::</span><span style="color: #DCDCAA">new</span><span style="color: #BBBBBB">();</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #6A9955">	// Create an output channel.</span></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #569CD6">let</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">channel</span><span style="color: #D4D4D4">:</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">Rc</span><span style="color: #BBBBBB">&lt;</span><span style="color: #9CDCFE">vscode</span><span style="color: #D4D4D4">::</span><span style="color: #4EC9B0">OutputChannel</span><span style="color: #BBBBBB">&gt; </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">Rc</span><span style="color: #D4D4D4">::</span><span style="color: #DCDCAA">new</span><span style="color: #BBBBBB">(</span><span style="color: #4EC9B0">vscode</span><span style="color: #D4D4D4">::</span><span style="color: #4EC9B0">window</span><span style="color: #D4D4D4">::</span><span style="color: #DCDCAA">create_output_channel</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">"Rust Extension"</span><span style="color: #BBBBBB">, </span><span style="color: #4EC9B0">Some</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">"plaintext"</span><span style="color: #BBBBBB">)));</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #6A9955">	// Register a command handler</span></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #569CD6">let</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">channel_clone</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">channel</span><span style="color: #D4D4D4">.</span><span style="color: #DCDCAA">clone</span><span style="color: #BBBBBB">();</span></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #9CDCFE">disposables</span><span style="color: #D4D4D4">.</span><span style="color: #DCDCAA">push</span><span style="color: #BBBBBB">(</span><span style="color: #4EC9B0">vscode</span><span style="color: #D4D4D4">::</span><span style="color: #4EC9B0">commands</span><span style="color: #D4D4D4">::</span><span style="color: #DCDCAA">register_command</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">"testbed-component-model-vscode.run"</span><span style="color: #BBBBBB">, </span><span style="color: #569CD6">move</span><span style="color: #BBBBBB"> </span><span style="color: #D4D4D4">||</span><span style="color: #BBBBBB"> {</span></span>
-                <span class="line"><span style="color: #BBBBBB">		</span><span style="color: #9CDCFE">channel_clone</span><span style="color: #D4D4D4">.</span><span style="color: #DCDCAA">append_line</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">"Open documents"</span><span style="color: #BBBBBB">);</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #6A9955">		// Print the URI of all open documents</span></span>
-                <span class="line"><span style="color: #BBBBBB">		</span><span style="color: #C586C0">for</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">document</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">in</span><span style="color: #BBBBBB"> </span><span style="color: #4EC9B0">vscode</span><span style="color: #D4D4D4">::</span><span style="color: #4EC9B0">workspace</span><span style="color: #D4D4D4">::</span><span style="color: #DCDCAA">text_documents</span><span style="color: #BBBBBB">() {</span></span>
-                <span class="line"><span style="color: #BBBBBB">			</span><span style="color: #9CDCFE">channel</span><span style="color: #D4D4D4">.</span><span style="color: #DCDCAA">append_line</span><span style="color: #BBBBBB">(</span><span style="color: #D4D4D4">&amp;</span><span style="color: #DCDCAA">format!</span><span style="color: #BBBBBB">(</span><span style="color: #CE9178">"Document: {}"</span><span style="color: #BBBBBB">, </span><span style="color: #9CDCFE">document</span><span style="color: #D4D4D4">.</span><span style="color: #DCDCAA">uri</span><span style="color: #BBBBBB">()));</span></span>
-                <span class="line"><span style="color: #BBBBBB">		}</span></span>
-                <span class="line"><span style="color: #BBBBBB">	}));</span></span>
-                <span class="line"><span style="color: #BBBBBB">	</span><span style="color: #C586C0">return</span><span style="color: #BBBBBB"> </span><span style="color: #9CDCFE">disposables</span><span style="color: #BBBBBB">;</span></span>
-                <span class="line"><span style="color: #BBBBBB">}</span></span>
-                <span class="line"></span>
-                <span class="line"><span style="color: #BBBBBB">#[export_name </span><span style="color: #D4D4D4">=</span><span style="color: #BBBBBB"> </span><span style="color: #CE9178">"deactivate"</span><span style="color: #BBBBBB">]</span></span>
-                <span class="line"><span style="color: #569CD6">pub</span><span style="color: #BBBBBB"> </span><span style="color: #569CD6">fn</span><span style="color: #BBBBBB"> </span><span style="color: #DCDCAA">deactivate</span><span style="color: #BBBBBB">() {</span></span>
-                <span class="line"><span style="color: #BBBBBB">}</span></span>
-                <span class="line"></span></code></pre>
-                <p>Notice that this code resembles an extension written in TypeScript.</p>
-                <p>Although this exploration appears promising, we have decided not to proceed with it for now. The primary reason is the lack of async support in WASM. Many VS Code APIs are asynchronous, making them difficult to proxy directly into WebAssembly code. We could run the WebAssembly code in a separate worker and employ the same synchronization mechanism used in the <a href="https://code.visualstudio.com/blogs/2023/06/05/vscode-wasm-wasi">WASI Preview 1 support</a> between the WebAssembly worker and the extension host worker. However, this approach might lead to unexpected behavior during synchronous API calls, as these calls would actually be executed asynchronously. As a result, the observable state could change between two synchronous calls (for instance, <code>setX(5); getX();</code> might not return 5).</p>
-                <p>Moreover, efforts are underway to introduce full async support to WASI in the 0.3 preview timeframe. Luke Wagner provided an update on the current state of async support at <a href="https://www.youtube.com/watch?v=y3x4-nQeXxc" class="external-link" target="_blank">WASM I/O 2024</a>. We have decided to wait for this support, as it will enable a more complete and clean implementation.</p>
-                <p>If you're interested in the corresponding WIT files, the Rust code, and the TypeScript code, you can find them in <a href="https://insiders.vscode.dev/github/microsoft/vscode-wasi/blob/dbaeumer/early-kingfisher-tan/rust-api/package.json#L1" class="external-link" target="_blank">rust-api</a> folder of the vscode-wasm repository.</p>
-                <h2 id="_what-comes-next" data-needslink="_what-comes-next"><a class="hash-link" href="#_what-comes-next">What Comes Next</a></h2>
-                <p>We are currently preparing a follow-up blog post that will cover more areas where WebAssembly code can be utilized for extension development. The major topics will include:</p>
-                <ul>
-                <li>Writing <a href="https://microsoft.github.io/language-server-protocol/" class="external-link" target="_blank">language servers</a> in WebAssembly.</li>
-                <li>Using the generated meta model to transparently offload long-running WebAssembly code into a separate worker.</li>
-                </ul>
-                <p>With a VS Code idiomatic implementation of the component model in place, we continue our efforts to implement the WASI 0.2 preview for VS Code.</p>
-                <p>Thanks,</p>
-                <p>Dirk and the VS Code team</p>
-                <p>Happy Coding!</p>
-            </div>
-        </div>
+  <div class="container-fluid">
+    <div class="title-wrap">
+      <h1>{{ blog.name }}</h1>
     </div>
+    <div class="image-wrap">
+      <img :src="blog.image" alt="imgage" />
+    </div>
+    <div class="blog-wrap" v-html="blog.content"></div>
+  </div>
 </template>
 
 <style scoped>
-
-.row {
-    color: #9ba3b4;
-    padding-top: 50px;
-    padding: 50px 100px;
+.container-fluid {
+  font-family: monospace, monospace;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    color: #ffff;
+.title-wrap {
+  border-bottom: 1px solid #bcbcbc;
+  margin: 0 0 50px 0;
+  width: 80%;
+  text-align: center;
 }
 
-.col {
-    max-height: 100%;
+.title-wrap h1 {
+  color: #bcbcbc;
+  padding: 30px 0;
+}
+.image-wrap img {
+  width: 100%;
+  margin: 0 0 30px 0;
+}
+.blog-wrap,
+.image-wrap {
+  max-width: 70%;
+  color: #bcbcbc;
+}
+.blog-wrap::v-deep(.ql-syntax) {
+  background-color: #ffff !important;
+  color: #397300 !important;
+  border-radius: 10px;
+  padding: 20px;
 }
 </style>

@@ -1,19 +1,71 @@
-<script>
+<script lang="ts">
 import { defineComponent } from 'vue'
 
+import supabase, {
+  DBOperations,
+  FilterTypes,
+  type Query,
+  type Response,
+  type QueryFilter
+} from '../../consumable/externals/supabase'
+import { blogsConstants, blogsTableColumns } from '../../consumable/constants/blogs'
+import { type Blog } from '../../consumable/models/blogs'
+import eventBus from '../../consumable/eventBus'
+
+interface BlogExplorer {
+  blogList: Array<Blog>
+  blogSearchTerm: string
+}
+
 export default defineComponent({
-  data() {
+  data(): BlogExplorer {
     return {
       blogSearchTerm: '',
-      blogList: [
+      blogList: []
+    }
+  },
+  methods: {
+    getBlogTitles() {
+      const filter: Array<QueryFilter> = [
         {
-          id: '1',
-          title: 'This blog is all about golang worker pool',
-          createdAt: '07 Jul 2025',
-          icon: 'https://cdn.pixabay.com/photo/2024/02/21/11/34/ai-generated-8587505_1280.png'
+          type: FilterTypes.EQ,
+          column: blogsTableColumns.IS_DELETED,
+          value: false
         }
       ]
+      let query: Query = {
+        operation: DBOperations.FETCH,
+        table: blogsConstants.SUPABASE_TABLE_BLOGS,
+        columns: [
+          blogsTableColumns.ID,
+          blogsTableColumns.IMAGE,
+          blogsTableColumns.NAME,
+          blogsTableColumns.UPDATED_AT
+        ],
+        filters: filter
+      }
+      supabase
+        .executeQuery(query)
+        .then((response: Response) => {
+          if (response.data) {
+            this.blogList = response.data.map((item: Blog) => {
+              const blog: Blog = {
+                id: item.id,
+                name: item.name,
+                image: item.image,
+                updated_at: item.updated_at?.slice(0, 10)
+              }
+              return blog
+            })
+          }
+        })
+        .catch((err: Error) => {
+          eventBus.emit('notify', err.message)
+        })
     }
+  },
+  mounted() {
+    this.getBlogTitles()
   }
 })
 </script>
@@ -36,13 +88,15 @@ export default defineComponent({
       </div>
       <div class="secondary-menu-list">
         <div class="secondary-menu-list_item" :key="blog.id" v-for="blog in blogList">
-          <div class="blog-item-img">
-            <img :src="blog.icon" alt="cover" />
-          </div>
-          <div class="blog-item-description">
-            <p class="blog-description">{{ blog.title }}</p>
-            <p class="blog-date">{{ blog.createdAt }}</p>
-          </div>
+          <router-link :to="'/blog/' + blog.id">
+            <div class="blog-item-img">
+              <img :src="blog.image" alt="cover" />
+            </div>
+            <div class="blog-item-description">
+              <p class="blog-description">{{ blog.name }}</p>
+              <p class="blog-date">{{ blog.updated_at }}</p>
+            </div>
+          </router-link>
         </div>
       </div>
     </div>
@@ -99,10 +153,15 @@ input[type='text']:focus {
 }
 
 .secondary-menu-list_item {
+  width: 100%;
+}
+.secondary-menu-list_item a {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   height: 50px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .secondary-menu-list_item:hover {
