@@ -13,11 +13,13 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@highlightjs/vue-plugin": "^2.1.0",
     "@jamescoyle/vue-icon": "^0.1.2",
     "@mdi/js": "^7.4.47",
     "@supabase/supabase-js": "^2.45.1",
+    "@vueup/vue-quill": "^1.2.0",
     "bootstrap-icons": "^1.11.3",
-    "bootstrap-vue": "^2.23.1",
+    "highlight.js": "^11.10.0",
     "tiny-emitter": "^2.1.0",
     "vue": "^3.4.31",
     "vue-router": "^4.4.2"

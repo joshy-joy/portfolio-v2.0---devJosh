@@ -1,18 +1,44 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
+import { QuillEditor } from '@vueup/vue-quill'
+import '@vueup/vue-quill/dist/vue-quill.snow.css'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github.css'
+
 import { type DynamicFormProp } from '../consumable/constants/common'
 
 interface DynamicForm {
   formData: Record<string, string>
   errors: Record<string, string>
+  editorOptions: Object
 }
 
 export default defineComponent({
+  components: {
+    QuillEditor
+  },
   data(): DynamicForm {
     return {
       formData: {},
-      errors: {}
+      errors: {},
+      editorOptions: {
+        theme: 'snow',
+        modules: {
+          syntax: {
+            highlight: (text: string) => hljs.highlightAuto(text).value
+          },
+          toolbar: [
+            [{ font: [] }],
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            ['link', 'image'],
+            [{ list: 'ordered' }, { list: 'bullet' }, { list: 'check' }],
+            [{ color: [] }, { background: [] }],
+            ['code-block']
+          ]
+        }
+      }
     }
   },
   props: {
@@ -59,6 +85,16 @@ export default defineComponent({
         v-model="formData[field.name]"
         v-else-if="field.type == 'textarea'"
       ></textarea>
+      <div class="editor-wrap" v-else-if="field.type == 'quill-editor'">
+        <QuillEditor
+          class="editor"
+          :options="editorOptions"
+          :id="field.name"
+          :style="{ height: '700px' }"
+          contentType="html"
+          v-model:content="formData[field.name]"
+        />
+      </div>
       <input
         v-else
         class="form-control"
@@ -90,5 +126,14 @@ form {
 }
 .btn {
   margin: 0 10px 0 0;
+}
+
+.editor-wrap {
+  background-color: #ffff !important;
+  color: #bcbcbc;
+}
+
+.ql-container {
+  height: 400px;
 }
 </style>
