@@ -9,7 +9,7 @@ export interface Project {
   tag?: Array<string>
   updated_at?: string
   type?: string
-  is_deleted: boolean
+  is_deleted?: boolean
 }
 
 export interface ProjectList {

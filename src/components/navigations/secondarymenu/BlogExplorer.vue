@@ -83,7 +83,6 @@ export default defineComponent({
           type="text"
           placeholder="Search Blogs"
           v-model="blogSearchTerm"
-          @keyup="searchBlogs()"
         />
       </div>
       <div class="secondary-menu-list">
