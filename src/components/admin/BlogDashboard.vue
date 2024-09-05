@@ -13,6 +13,7 @@ import { blogsConstants, blogsTableColumns } from '../consumable/constants/blogs
 import { type Blog } from '../consumable/models/blogs'
 import { type DynamicFormProp } from '../consumable/constants/common'
 import DynamicForm from '../commons/DynamicForm.vue'
+import type { Project } from '../consumable/models/projects'
 
 interface DashboardProject {
   blogs: Array<Blog>
@@ -21,6 +22,9 @@ interface DashboardProject {
   formInitialField: Object
   isFormVisible: boolean
   formMode: string
+  file: any
+  blogImageFolderBasePath: string
+  blogImageBaseURL: string
 }
 
 const getNewFormConfiguration = (): Object => {
@@ -51,7 +55,11 @@ export default defineComponent({
       formInitialField: {},
       editingBlog: {},
       isFormVisible: false,
-      formMode: ''
+      formMode: '',
+      file: {},
+      blogImageFolderBasePath: 'blogs_images',
+      blogImageBaseURL:
+        'https://ebjhvskzfrqrgegxbsnz.supabase.co/storage/v1/object/public/portfolio_images/blogs_images'
     }
   },
   methods: {
@@ -63,7 +71,7 @@ export default defineComponent({
           this.fetchBlogs()
         })
         .catch((err: Error) => {
-          this.errorHandler(err)
+          this.notify(err)
         })
     },
     // Mehod to fetch blogs
@@ -86,7 +94,7 @@ export default defineComponent({
           this.blogs = response.data as Array<Blog>
         })
         .catch((err: Error) => {
-          this.errorHandler(err)
+          this.notify(err)
         })
     },
     // Method to trigger dynamic form
@@ -95,7 +103,7 @@ export default defineComponent({
       this.form = [
         { name: blogsTableColumns.NAME, label: 'Name', type: 'text', required: true },
         { name: blogsTableColumns.TAG, label: 'Tags', type: 'text', required: true },
-        { name: blogsTableColumns.IMAGE, label: 'Image', type: 'text', required: true },
+        { name: blogsTableColumns.IMAGE, label: 'Image', type: 'file', required: true },
         {
           name: blogsTableColumns.CONTENT,
           label: 'Content',
@@ -117,22 +125,38 @@ export default defineComponent({
     },
     // Method to handle the dynamic form submit event
     formSubmitHandler(formData: Record<string, any>) {
+      // Creating new filename
+      const dt = new Date()
+      const newFileName = `blog_${dt.toISOString()}`
+      // uploading new file
       if (this.formMode == 'new') {
+        if (!this.file?.size) {
+          this.notify(new Error('uploaded file missing'))
+          return
+        }
+        this.uploadImage(newFileName)
+        formData['image'] = `${this.blogImageBaseURL}/${newFileName}`
         this.createBlog(formData)
       } else {
+        if (this.file?.size) {
+          const filename = this.editingBlog.image.split('/').pop() as string
+          formData['image'] = `${this.blogImageBaseURL}/${newFileName}`
+          this.uploadImage(newFileName)
+          this.deleteImage(filename)
+        }
         this.updateBlog(formData)
       }
       this.handleCloseForm()
     },
-    errorHandler(err: Error) {
-      eventBus.emit('notify', err.message)
+    notify(err: Error | string) {
+      eventBus.emit('notify', err as string)
     },
     // Method to create new blog record
     createBlog(formData: Record<string, any>) {
       // validate form values for empty keys
       Object.keys(formData).forEach((key: string) => {
         if (formData[key] == '' || formData[key] == undefined) {
-          this.errorHandler(new Error('mandatory form filed is empty'))
+          this.notify(new Error('mandatory form filed is empty'))
           return
         }
       })
@@ -186,16 +210,16 @@ export default defineComponent({
       }
     },
     // Method to delete blog
-    deleteBlog(id: string | undefined) {
-      if (id == undefined) {
-        this.errorHandler(new Error('id is undefined'))
+    deleteBlog(project: Project) {
+      if (project.id == undefined) {
+        this.notify(new Error('id is undefined'))
         return
       }
       const filter: Array<QueryFilter> = [
         {
           type: FilterTypes.EQ,
           column: blogsTableColumns.ID,
-          value: id
+          value: project.id
         }
       ]
       let query: Query = {
@@ -204,9 +228,50 @@ export default defineComponent({
         values: { is_deleted: true },
         filters: filter
       }
-
+      this.archiveImage(project.image?.split('/').pop() as string)
       // call supabase client and run the query
       this.dbQueryExecutionHandler(query)
+    },
+    fileUploadHandler(event: any) {
+      this.file = event.target.files[0]
+    },
+    uploadImage(filename: string) {
+      supabase
+        .uploadFileToBucket(
+          'portfolio_images',
+          `${this.blogImageFolderBasePath}/${filename}`,
+          this.file
+        )
+        .then(() => {
+          this.notify('image uploaded successfully')
+        })
+        .catch(() => {
+          this.notify(new Error('error uploading image'))
+        })
+    },
+    deleteImage(filename: string) {
+      supabase
+        .deleteFile('portfolio_images', [`${this.blogImageFolderBasePath}/${filename}`])
+        .then(() => {
+          this.notify('image deleted successfully')
+        })
+        .catch(() => {
+          this.notify(new Error('error deleting image'))
+        })
+    },
+    archiveImage(filename: string) {
+      supabase
+        .moveFile(
+          'portfolio_images',
+          `${this.blogImageFolderBasePath}/${filename}`,
+          `${this.blogImageFolderBasePath}/archived/${filename}`
+        )
+        .then(() => {
+          this.notify('image archived successfully')
+        })
+        .catch(() => {
+          this.notify(new Error('error archived image'))
+        })
     }
   },
   mounted() {
@@ -222,6 +287,7 @@ export default defineComponent({
         :fields="form"
         :initialValues="formInitialField"
         :onSubmit="formSubmitHandler"
+        :onChange="fileUploadHandler"
         :onCancel="handleCloseForm"
       ></dynamic-form>
     </div>
@@ -255,7 +321,7 @@ export default defineComponent({
                 </button>
               </td>
               <td>
-                <button class="btn" @click="deleteBlog(blog.id)">
+                <button class="btn" @click="deleteBlog(blog)">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>

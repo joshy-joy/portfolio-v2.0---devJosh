@@ -62,6 +62,9 @@ export default defineComponent({
         .catch((err: Error) => {
           eventBus.emit('notify', err.message)
         })
+    },
+    openTab(tabName: string | undefined, path: string) {
+      eventBus.emit('openTab', tabName, path)
     }
   },
   mounted() {
@@ -87,7 +90,7 @@ export default defineComponent({
       </div>
       <div class="secondary-menu-list">
         <div class="secondary-menu-list_item" :key="blog.id" v-for="blog in blogList">
-          <router-link :to="'/blog/' + blog.id">
+          <router-link :to="'/blog/' + blog.id" @click="openTab(blog.name, `/blog/${blog.id}`)">
             <div class="blog-item-img">
               <img :src="blog.image" alt="cover" />
             </div>

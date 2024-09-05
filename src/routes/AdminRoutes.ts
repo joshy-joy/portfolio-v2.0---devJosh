@@ -1,5 +1,6 @@
 import ProjectDashboard from '@/components/admin/ProjectDashboard.vue'
 import BlogDashboard from '@/components/admin/BlogDashboard.vue'
+import FileUpload from '@/components/admin/FileUpload.vue'
 
 const AdminRouter = [
   {
@@ -12,6 +13,13 @@ const AdminRouter = [
   {
     path: '/dashboard/blogs',
     component: BlogDashboard,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/dashboard/uploads',
+    component: FileUpload,
     meta: {
       requiresAuth: true
     }

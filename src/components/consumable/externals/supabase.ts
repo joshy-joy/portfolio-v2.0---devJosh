@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import type { MIMEType } from 'util'
 
 export interface QueryFilter {
   type: string
@@ -121,6 +122,20 @@ class Supabase {
     return this.conn.auth.onAuthStateChange((event: string) => {
       callBack(event)
     })
+  }
+
+  async uploadFileToBucket(name: string, path: string, file: MIMEType) {
+    return await this.conn.storage.from(name).upload(path, file, {
+      cacheControl: '3600',
+      upsert: true
+    })
+  }
+
+  async deleteFile(name: string, path: Array<string>) {
+    return await this.conn.storage.from(name).remove(path)
+  }
+  async moveFile(name: string, fromPath: string, toPath: string) {
+    return await this.conn.storage.from(name).move(fromPath, toPath)
   }
 }
 

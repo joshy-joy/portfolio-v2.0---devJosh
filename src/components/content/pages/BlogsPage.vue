@@ -2,7 +2,7 @@
 import { defineComponent } from 'vue'
 
 import hljs from 'highlight.js'
-import 'highlight.js/styles/atom-one-dark.css'
+import 'highlight.js/styles/github-dark-dimmed.css'
 
 import supabase, {
   DBOperations,
@@ -127,9 +127,16 @@ export default defineComponent({
   color: #bcbcbc;
 }
 .blog-wrap::v-deep(.ql-syntax) {
-  background-color: #282c34;
   padding: 16px;
   border-radius: 8px;
   overflow-x: auto;
+}
+.blog-wrap::v-deep(.hljs) {
+  color: #adbac7;
+  background: #22272e;
+}
+
+.blog-wrap::v-deep(.hljs-string) {
+  color: #96d0ff;
 }
 </style>
