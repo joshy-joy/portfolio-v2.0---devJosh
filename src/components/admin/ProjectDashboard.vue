@@ -12,6 +12,7 @@ import supabase, {
 import { projectConstants, projectTableColumns } from '../consumable/constants/projects'
 import { type Project } from '../consumable/models/projects'
 import { type DynamicFormProp } from '../consumable/constants/common'
+import { log } from 'console'
 
 interface DashboardProject {
   projects: Array<Project>
@@ -20,6 +21,9 @@ interface DashboardProject {
   formInitialField: Object
   isCreateProjectFormVisible: boolean
   formMode: string
+  file: any
+  projectImageFolderBasePath: string
+  projectImageBaseURL: string
 }
 
 const getNewFormConfiguration = (): Object => {
@@ -53,7 +57,11 @@ export default defineComponent({
       formInitialField: {},
       editingProject: {},
       isCreateProjectFormVisible: false,
-      formMode: ''
+      formMode: '',
+      file: {},
+      projectImageFolderBasePath: 'project_images',
+      projectImageBaseURL:
+        'https://ebjhvskzfrqrgegxbsnz.supabase.co/storage/v1/object/public/portfolio_images/project_images'
     }
   },
   methods: {
@@ -65,7 +73,7 @@ export default defineComponent({
           this.fetchProjects()
         })
         .catch((err: Error) => {
-          this.errorHandler(err)
+          this.notify(err)
         })
     },
     // Mehod to fetch personal projects
@@ -88,7 +96,7 @@ export default defineComponent({
           this.projects = response.data as Array<Project>
         })
         .catch((err: Error) => {
-          this.errorHandler(err)
+          this.notify(err)
         })
     },
     // Method to trigger dynamic form
@@ -111,8 +119,8 @@ export default defineComponent({
           values: ['in-progress', 'on-going', 'completed']
         },
         { name: projectTableColumns.TAG, label: 'Tags', type: 'text', required: true },
-        { name: projectTableColumns.REDIRECT, label: 'Redirect', type: 'text', required: true },
-        { name: projectTableColumns.IMAGE, label: 'Image', type: 'text', required: true },
+        { name: projectTableColumns.REDIRECT, label: 'Redirect URL', type: 'text', required: true },
+        { name: 'image', label: 'Image', type: 'file', required: true },
         {
           name: projectTableColumns.DESCRIPTION,
           label: 'Description',
@@ -134,22 +142,39 @@ export default defineComponent({
     },
     // Method to handle the dynamic form submit event
     formSubmitHandler(formData: Record<string, any>) {
+      // Creating new filename
+      const dt = new Date()
+      const newFileName = `project_${dt.toISOString()}`
+      // uploading new file
       if (this.formMode == 'new') {
+        if (!this.file?.size) {
+          this.notify(new Error('uploaded file missing'))
+          return
+        }
+        this.uploadImage(newFileName)
+        formData['image'] = `${this.projectImageBaseURL}/${newFileName}`
         this.createProject(formData)
       } else {
+        if (this.file?.size) {
+          const filename = this.editingProject.image.split('/').pop() as string
+          formData['image'] = `${this.projectImageBaseURL}/${newFileName}`
+          this.uploadImage(newFileName)
+          this.deleteImage(filename)
+        }
         this.updateProject(formData)
       }
       this.handleCloseForm()
     },
-    errorHandler(err: Error) {
-      eventBus.emit('notify', err.message)
+    // Method for creting push notification
+    notify(msg: Error | string) {
+      eventBus.emit('notify', msg)
     },
     // Method to create new project record
     createProject(formData: Record<string, any>) {
       // validate form values for empty keys
       Object.keys(formData).forEach((key: string) => {
         if (formData[key] == '' || formData[key] == undefined) {
-          this.errorHandler(new Error('mandatory form filed is empty'))
+          this.notify(new Error('mandatory form filed is empty'))
           return
         }
       })
@@ -203,16 +228,16 @@ export default defineComponent({
       }
     },
     // Method to delete project
-    deleteProject(id: string | undefined) {
-      if (id == undefined) {
-        this.errorHandler(new Error('id is undefined'))
+    deleteProject(project: Project) {
+      if (!project.id) {
+        this.notify(new Error('id not found'))
         return
       }
       const filter: Array<QueryFilter> = [
         {
           type: FilterTypes.EQ,
           column: projectTableColumns.ID,
-          value: id
+          value: project.id
         }
       ]
       let query: Query = {
@@ -221,9 +246,50 @@ export default defineComponent({
         values: { is_deleted: true },
         filters: filter
       }
-
+      this.archiveImage(project.image?.split('/').pop() as string)
       // call supabase client and run the query
       this.dbQueryExecutionHandler(query)
+    },
+    fileUploadHandler(event: any) {
+      this.file = event.target.files[0]
+    },
+    uploadImage(filename: string) {
+      supabase
+        .uploadFileToBucket(
+          'portfolio_images',
+          `${this.projectImageFolderBasePath}/${filename}`,
+          this.file
+        )
+        .then(() => {
+          this.notify('image uploaded successfully')
+        })
+        .catch(() => {
+          this.notify(new Error('error uploading image'))
+        })
+    },
+    deleteImage(filename: string) {
+      supabase
+        .deleteFile('portfolio_images', [`${this.projectImageFolderBasePath}/${filename}`])
+        .then(() => {
+          this.notify('image deleted successfully')
+        })
+        .catch(() => {
+          this.notify(new Error('error deleting image'))
+        })
+    },
+    archiveImage(filename: string) {
+      supabase
+        .moveFile(
+          'portfolio_images',
+          `${this.projectImageFolderBasePath}/${filename}`,
+          `${this.projectImageFolderBasePath}/archived/${filename}`
+        )
+        .then(() => {
+          this.notify('image archived successfully')
+        })
+        .catch(() => {
+          this.notify(new Error('error archived image'))
+        })
     }
   },
   mounted() {
@@ -239,6 +305,7 @@ export default defineComponent({
         :fields="form"
         :initialValues="formInitialField"
         :onSubmit="formSubmitHandler"
+        :onChange="fileUploadHandler"
         :onCancel="handleCloseForm"
       ></dynamic-form>
     </div>
@@ -282,7 +349,7 @@ export default defineComponent({
                 </button>
               </td>
               <td>
-                <button class="btn" @click="deleteProject(project.id)">
+                <button class="btn" @click="deleteProject(project)">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>

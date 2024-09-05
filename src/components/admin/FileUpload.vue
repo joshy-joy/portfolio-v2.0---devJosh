@@ -31,11 +31,10 @@ export default defineComponent({
     },
     formSubmitHandler() {
       if (!this.file || this.file?.type != 'application/pdf') return
-      supabase.uploadFileToBucket(
-        'portfolio_images',
-        `${this.commonFolderBasePath}/joshy_joy-resume.pdf`,
-        this.file
-      )
+      let path = `${this.commonFolderBasePath}/joshy_joy-resume.pdf`
+      supabase.deleteFile('portfolio_images', [path]).then(() => {
+        supabase.uploadFileToBucket('portfolio_images', path, this.file)
+      })
     }
   }
 })

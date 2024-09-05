@@ -130,6 +130,13 @@ class Supabase {
       upsert: true
     })
   }
+
+  async deleteFile(name: string, path: Array<string>) {
+    return await this.conn.storage.from(name).remove(path)
+  }
+  async moveFile(name: string, fromPath: string, toPath: string) {
+    return await this.conn.storage.from(name).move(fromPath, toPath)
+  }
 }
 
 const supabase = new Supabase(
