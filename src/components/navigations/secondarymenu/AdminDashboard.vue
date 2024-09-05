@@ -26,6 +26,13 @@ export default defineComponent({})
             </div>
           </router-link>
         </li>
+        <li class="directory-list-item">
+          <router-link to="/dashboard/uploads">
+            <div class="file-item-wrap">
+              <p class="file-item-name">file uploads</p>
+            </div>
+          </router-link>
+        </li>
       </ul>
     </div>
   </div>

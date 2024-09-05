@@ -14,6 +14,7 @@ import FooterLayout from './components/layout/FooterLayout.vue'
 import TheLineNumber from './components/commons/TheLineNumber.vue'
 import AuthenticationWindow from './components/auth/AuthenticationWindow.vue'
 import PushNotifications from './components/commons/PushNotifications.vue'
+import DynamicForm from './components/commons/DynamicForm.vue'
 
 const app = createApp(App)
 
@@ -24,6 +25,7 @@ app.component('header-layout', HeaderLayout)
 app.component('line-number', TheLineNumber)
 app.component('authentication-window', AuthenticationWindow)
 app.component('push-notifications', PushNotifications)
+app.component('dynamic-form', DynamicForm)
 
 app.use(router)
 

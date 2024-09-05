@@ -12,7 +12,6 @@ import supabase, {
 import { projectConstants, projectTableColumns } from '../consumable/constants/projects'
 import { type Project } from '../consumable/models/projects'
 import { type DynamicFormProp } from '../consumable/constants/common'
-import DynamicForm from '../commons/DynamicForm.vue'
 
 interface DashboardProject {
   projects: Array<Project>
@@ -47,9 +46,6 @@ const getEditFormConfiguration = (data: Project): Object => {
   }
 }
 export default defineComponent({
-  components: {
-    'dynamic-form': DynamicForm
-  },
   data(): DashboardProject {
     return {
       projects: [],

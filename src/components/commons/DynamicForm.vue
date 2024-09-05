@@ -56,7 +56,11 @@ export default defineComponent({
     },
     onCancel: {
       type: Function,
-      required: true
+      required: false
+    },
+    onChange: {
+      type: Function,
+      required: false
     }
   },
   beforeMount() {
@@ -96,6 +100,14 @@ export default defineComponent({
         />
       </div>
       <input
+        class="form-control"
+        type="file"
+        :id="field.name"
+        :name="field.name"
+        @change="onChange($event)"
+        v-else-if="field.type == 'file' && onChange"
+      />
+      <input
         v-else
         class="form-control"
         :type="field.type"
@@ -106,7 +118,7 @@ export default defineComponent({
       <div v-if="errors[field.name]">{{ errors[field.name] }}</div>
     </div>
     <button class="btn" type="submit">Submit</button>
-    <button class="btn" @click.prevent="onCancel()">Cancel</button>
+    <button class="btn" @click.prevent="onCancel()" v-if="onCancel">Cancel</button>
   </form>
 </template>
 
@@ -135,5 +147,22 @@ form {
 
 .ql-container {
   height: 400px;
+}
+
+input[type='file'] {
+  background: inherit;
+  color: #ffff;
+  padding: 0;
+}
+
+input::file-selector-button {
+  height: 38px;
+  background: #0279cb;
+  color: #ffff;
+  margin: 0 20px 0 0 !important;
+  padding: 0 !important;
+  box-shadow: none;
+  border: none;
+  width: 150px;
 }
 </style>
