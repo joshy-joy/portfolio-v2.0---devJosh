@@ -5,6 +5,9 @@
 
 This is the second iteration of my portfolio. Completely migrating to vue.js from flask and Jinja templates.
 
+# Architecture
+![alt text](https://ebjhvskzfrqrgegxbsnz.supabase.co/storage/v1/object/public/portfolio_images/common/resume_joshy_joy.pdf?t=2024-09-05T17%3A06%3A01.067Z)
+
 ## Recommended IDE Setup
 
 [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
