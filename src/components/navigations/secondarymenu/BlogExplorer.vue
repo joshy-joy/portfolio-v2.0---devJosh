@@ -63,7 +63,7 @@ export default defineComponent({
           eventBus.emit('notify', err.message)
         })
     },
-    openTab(tabName: string, path: string) {
+    openTab(tabName: string | undefined, path: string) {
       eventBus.emit('openTab', tabName, path)
     }
   },
