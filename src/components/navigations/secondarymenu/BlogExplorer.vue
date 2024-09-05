@@ -169,8 +169,8 @@ input[type='text']:focus {
 }
 
 .blog-item-img img {
-  width: 50px;
-  padding: 0 0 0 10px;
+  height: 50px;
+  padding: 0 10px 0 0;
 }
 
 .blog-item-description p {

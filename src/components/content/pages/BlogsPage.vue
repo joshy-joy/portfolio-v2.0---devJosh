@@ -2,6 +2,7 @@
 import { defineComponent } from 'vue'
 
 import hljs from 'highlight.js'
+import 'highlight.js/styles/atom-one-dark.css'
 
 import supabase, {
   DBOperations,
@@ -22,6 +23,18 @@ export default defineComponent({
   data(): BlogPageType {
     return {
       blog: {}
+    }
+  },
+  computed: {
+    highlightedCode() {
+      const wrapper = document.createElement('div')
+      wrapper.innerHTML = this.blog.content as string
+
+      wrapper.querySelectorAll('pre').forEach((block) => {
+        hljs.highlightBlock(block)
+      })
+
+      return wrapper.innerHTML
     }
   },
   methods: {
@@ -64,18 +77,10 @@ export default defineComponent({
         .catch((err: Error) => {
           eventBus.emit('notify', err.message)
         })
-    },
-    highlightPost() {
-      document.querySelectorAll('pre').forEach((block) => {
-        hljs.highlightBlock(block)
-      })
     }
   },
   beforeMount() {
     this.getBlog()
-  },
-  mounted() {
-    this.highlightPost()
   }
 })
 </script>
@@ -88,7 +93,7 @@ export default defineComponent({
     <div class="image-wrap">
       <img :src="blog.image" alt="imgage" />
     </div>
-    <div class="blog-wrap" v-html="blog.content"></div>
+    <div class="blog-wrap" v-html="highlightedCode"></div>
   </div>
 </template>
 
@@ -122,9 +127,9 @@ export default defineComponent({
   color: #bcbcbc;
 }
 .blog-wrap::v-deep(.ql-syntax) {
-  background-color: #ffff !important;
-  color: #397300 !important;
-  border-radius: 10px;
-  padding: 20px;
+  background-color: #282c34;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
 }
 </style>
