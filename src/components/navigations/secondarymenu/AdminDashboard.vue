@@ -1,7 +1,14 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
+import eventBus from '../../consumable/eventBus'
 
-export default defineComponent({})
+export default defineComponent({
+  methods: {
+    openTab(tabName: string, path: string) {
+      eventBus.emit('openTab', tabName, path)
+    }
+  }
+})
 </script>
 
 <template>
@@ -12,21 +19,24 @@ export default defineComponent({})
     </div>
     <div class="secondary-menu-list-wrap">
       <ul class="directory-list">
-        <li class="directory-list-item">
+        <li
+          class="directory-list-item"
+          @click="openTab('Project Dashboard', '/dashboard/projects')"
+        >
           <router-link to="/dashboard/projects">
             <div class="file-item-wrap">
               <p class="file-item-name">Projects</p>
             </div>
           </router-link>
         </li>
-        <li class="directory-list-item">
+        <li class="directory-list-item" @click="openTab('Blog Dashboard', '/dashboard/blogs')">
           <router-link to="/dashboard/blogs">
             <div class="file-item-wrap">
               <p class="file-item-name">Blogs</p>
             </div>
           </router-link>
         </li>
-        <li class="directory-list-item">
+        <li class="directory-list-item" @click="openTab('File upload', '/dashboard/uploads')">
           <router-link to="/dashboard/uploads">
             <div class="file-item-wrap">
               <p class="file-item-name">file uploads</p>

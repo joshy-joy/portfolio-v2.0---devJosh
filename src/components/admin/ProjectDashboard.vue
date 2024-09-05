@@ -12,7 +12,6 @@ import supabase, {
 import { projectConstants, projectTableColumns } from '../consumable/constants/projects'
 import { type Project } from '../consumable/models/projects'
 import { type DynamicFormProp } from '../consumable/constants/common'
-import { log } from 'console'
 
 interface DashboardProject {
   projects: Array<Project>
