@@ -202,6 +202,11 @@ export default {}
   width: 200px;
 }
 
+.btn a {
+  text-decoration: none;
+  color: #ffff;
+}
+
 .experience-title {
   width: 100%;
   font-size: 10px;
