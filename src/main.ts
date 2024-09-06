@@ -18,6 +18,8 @@ import DynamicForm from './components/commons/DynamicForm.vue'
 
 const app = createApp(App)
 
+app.use(router)
+
 app.component('main-content', MainContent)
 app.component('footer-layout', FooterLayout)
 app.component('primary-nav', TheNavigations)
@@ -26,7 +28,5 @@ app.component('line-number', TheLineNumber)
 app.component('authentication-window', AuthenticationWindow)
 app.component('push-notifications', PushNotifications)
 app.component('dynamic-form', DynamicForm)
-
-app.use(router)
 
 app.mount('#app')
