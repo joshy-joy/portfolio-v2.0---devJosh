@@ -17,8 +17,11 @@ export interface ProjectList {
   company?: Array<Project>
 }
 
-export interface Data {
+export interface ProjectPage {
   projects?: ProjectList
   isPersonalProjectEmpty: boolean
   IsCompanyProjectEmpty: boolean
+  lineCount: number
+  contentWrapElement: Element | null
+  resizeObserver: ResizeObserver
 }

@@ -1,11 +1,35 @@
 <script lang="ts">
-export default {}
+import { defineComponent } from 'vue'
+import eventBus from '../../consumable/eventBus'
+
+export default defineComponent({
+  data() {
+    return {
+      lineCount: 0,
+      contentWrapElement: document.getElementsByClassName('')[0],
+      resizeObserver: new ResizeObserver(() => {})
+    }
+  },
+  mounted() {
+    eventBus.emit('openTab', 'About.py', '/about')
+    this.contentWrapElement = document.getElementsByClassName('content-wrap')[0]
+    this.resizeObserver = new ResizeObserver((entries) => {
+      this.lineCount = Math.round(
+        (entries[0].target.children[1].clientHeight + entries[0].target.children[1].offsetTop) / 24
+      )
+    })
+    this.resizeObserver.observe(this.contentWrapElement)
+  },
+  unmounted() {
+    this.resizeObserver.unobserve(this.contentWrapElement)
+  }
+})
 </script>
 
 <template>
   <div class="row">
     <div class="col-sm-12">
-      <line-number :totalLine="50"></line-number>
+      <line-number :totalLine="lineCount"></line-number>
       <div class="content-wrap">
         <div class="about-code-wrap">
           <p>
@@ -168,7 +192,6 @@ export default {}
   color: #607b96;
   padding: 7px 20px 7px 20px;
   border-right: 1px solid #2b2b2b;
-  height: 100%;
 }
 
 .about-code-wrap p {
@@ -193,7 +216,6 @@ export default {}
   justify-content: flex-start;
   align-items: center;
   width: 100%;
-  height: 100%;
   padding: 10px 20px;
 }
 
