@@ -5,6 +5,7 @@ import FileUpload from '@/components/admin/FileUpload.vue'
 const AdminRouter = [
   {
     path: '/dashboard/projects',
+    name: 'projectDashboard',
     component: ProjectDashboard,
     meta: {
       requiresAuth: true
@@ -12,6 +13,7 @@ const AdminRouter = [
   },
   {
     path: '/dashboard/blogs',
+    name: 'blogDashboard',
     component: BlogDashboard,
     meta: {
       requiresAuth: true
@@ -19,6 +21,7 @@ const AdminRouter = [
   },
   {
     path: '/dashboard/uploads',
+    name: 'fileDashboard',
     component: FileUpload,
     meta: {
       requiresAuth: true

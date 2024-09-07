@@ -9,14 +9,17 @@ import supabase, {
   type Response
 } from '../../consumable/externals/supabase'
 import { projectConstants, projectTableColumns } from '../../consumable/constants/projects'
-import { type Project, type Data } from '../../consumable/models/projects'
+import { type Project, type ProjectPage } from '../../consumable/models/projects'
 
 export default defineComponent({
-  data(): Data {
+  data(): ProjectPage {
     return {
       projects: { company: [], personal: [] },
       isPersonalProjectEmpty: false,
-      IsCompanyProjectEmpty: false
+      IsCompanyProjectEmpty: false,
+      lineCount: 0,
+      contentWrapElement: document.getElementsByClassName('')[0],
+      resizeObserver: new ResizeObserver(() => {})
     }
   },
   methods: {
@@ -96,13 +99,29 @@ export default defineComponent({
       this.fetchCompanyProjects(filteredStack)
       this.fetchPersonalProjects(filteredStack)
     })
+  },
+  mounted() {
+    eventBus.emit('openTab', 'projects', '/projects')
+    this.contentWrapElement = document.getElementById('personal-project-row')
+    this.resizeObserver = new ResizeObserver((entries) => {
+      let count = Math.round(entries[0].contentRect.bottom / 15)
+      if (count < 35) {
+        this.lineCount = 35
+      } else {
+        this.lineCount = count
+      }
+    })
+    this.resizeObserver.observe(this.contentWrapElement as Element)
+  },
+  unmounted() {
+    this.resizeObserver.unobserve(this.contentWrapElement as Element)
   }
 })
 </script>
 
 <template>
   <div class="container">
-    <line-number :totalLine="50"></line-number>
+    <line-number :totalLine="lineCount"></line-number>
     <div class="card-container">
       <p class="code-comments" v-if="!IsCompanyProjectEmpty">// Company Projects</p>
       <div class="row row-cols-3">
@@ -131,7 +150,7 @@ export default defineComponent({
         </div>
       </div>
       <p class="code-comments" v-if="!isPersonalProjectEmpty">// Personal Projects</p>
-      <div class="row row-cols-3">
+      <div id="personal-project-row" class="row row-cols-3">
         <div class="col card-wrap" :key="project.id" v-for="(project, i) in projects?.personal">
           <p class="project-comment">
             <span class="code-blue">Project {{ i + 1 }} </span>

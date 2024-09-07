@@ -1,12 +1,35 @@
 <script lang="ts">
-export default {}
+import { defineComponent } from 'vue'
+import eventBus from '../../consumable/eventBus'
+
+export default defineComponent({
+  data() {
+    return {
+      lineCount: 0,
+      contentWrapElement: document.getElementById('aboutContentWrap'),
+      resizeObserver: new ResizeObserver(() => {})
+    }
+  },
+  mounted() {
+    eventBus.emit('openTab', 'About.py', '/about')
+    this.contentWrapElement = document.getElementById('aboutContentWrap')
+    this.resizeObserver = new ResizeObserver((entries: Array<ResizeObserverEntry>) => {
+      console.log(entries)
+      this.lineCount = Math.round(entries[0].contentRect.height / 24)
+    })
+    this.resizeObserver.observe(this.contentWrapElement as HTMLElement)
+  },
+  unmounted() {
+    this.resizeObserver.unobserve(this.contentWrapElement as HTMLElement)
+  }
+})
 </script>
 
 <template>
   <div class="row">
     <div class="col-sm-12">
-      <line-number :totalLine="50"></line-number>
-      <div class="content-wrap">
+      <line-number :totalLine="lineCount"></line-number>
+      <div id="aboutContentWrap" class="content-wrap">
         <div class="about-code-wrap">
           <p>
             ## * * * About me * * *<br />
@@ -159,7 +182,6 @@ export default {}
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
-  height: 100%;
   width: 100%;
   margin: 0;
 }
@@ -168,7 +190,6 @@ export default {}
   color: #607b96;
   padding: 7px 20px 7px 20px;
   border-right: 1px solid #2b2b2b;
-  height: 100%;
 }
 
 .about-code-wrap p {
@@ -193,13 +214,17 @@ export default {}
   justify-content: flex-start;
   align-items: center;
   width: 100%;
-  height: 100%;
   padding: 10px 20px;
 }
 
 .resume-download-wrap button {
   margin: 50px;
   width: 200px;
+}
+
+.btn a {
+  text-decoration: none;
+  color: #ffff;
 }
 
 .experience-title {

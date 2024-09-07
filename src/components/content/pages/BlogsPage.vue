@@ -72,6 +72,7 @@ export default defineComponent({
               content: item.content,
               tags: item.tags
             }
+            eventBus.emit('openTab', item.name, `/blog/${item.id}`)
           }
         })
         .catch((err: Error) => {

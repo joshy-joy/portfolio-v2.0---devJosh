@@ -5,11 +5,11 @@ import BlogsPage from '../components/content/pages/BlogsPage.vue'
 import ContactPage from '../components/content/pages/ContactPage.vue'
 
 const PublicRoutes = [
-  { path: '/', component: HomePage },
-  { path: '/about', component: AboutPage },
-  { path: '/projects', component: ProjectsPage },
-  { path: '/blog/:id', component: BlogsPage },
-  { path: '/contact', component: ContactPage }
+  { path: '/', name: 'home', component: HomePage },
+  { path: '/about', name: 'about', component: AboutPage },
+  { path: '/projects', name: 'projects', component: ProjectsPage },
+  { path: '/blog/:id', name: 'blog', component: BlogsPage },
+  { path: '/contact', name: 'contact', component: ContactPage }
 ]
 
 export default PublicRoutes

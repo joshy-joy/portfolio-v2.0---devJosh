@@ -1,4 +1,4 @@
-import { createMemoryHistory, createRouter } from 'vue-router'
+import { createWebHistory, createRouter } from 'vue-router'
 
 import supabase from '../components/consumable/externals/supabase'
 
@@ -8,7 +8,7 @@ import AdminRouter from './AdminRoutes'
 const routes = [...PublicRoutes, ...AdminRouter]
 
 const router = createRouter({
-  history: createMemoryHistory(),
+  history: createWebHistory(),
   routes
 })
 
