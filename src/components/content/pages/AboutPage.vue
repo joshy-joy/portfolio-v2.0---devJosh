@@ -6,22 +6,21 @@ export default defineComponent({
   data() {
     return {
       lineCount: 0,
-      contentWrapElement: document.getElementsByClassName('')[0],
+      contentWrapElement: document.getElementById('aboutContentWrap'),
       resizeObserver: new ResizeObserver(() => {})
     }
   },
   mounted() {
     eventBus.emit('openTab', 'About.py', '/about')
-    this.contentWrapElement = document.getElementsByClassName('content-wrap')[0]
-    this.resizeObserver = new ResizeObserver((entries) => {
-      this.lineCount = Math.round(
-        (entries[0].target.children[1].clientHeight + entries[0].target.children[1].offsetTop) / 24
-      )
+    this.contentWrapElement = document.getElementById('aboutContentWrap')
+    this.resizeObserver = new ResizeObserver((entries: Array<ResizeObserverEntry>) => {
+      console.log(entries)
+      this.lineCount = Math.round(entries[0].contentRect.height / 24)
     })
-    this.resizeObserver.observe(this.contentWrapElement)
+    this.resizeObserver.observe(this.contentWrapElement as HTMLElement)
   },
   unmounted() {
-    this.resizeObserver.unobserve(this.contentWrapElement)
+    this.resizeObserver.unobserve(this.contentWrapElement as HTMLElement)
   }
 })
 </script>
@@ -30,7 +29,7 @@ export default defineComponent({
   <div class="row">
     <div class="col-sm-12">
       <line-number :totalLine="lineCount"></line-number>
-      <div class="content-wrap">
+      <div id="aboutContentWrap" class="content-wrap">
         <div class="about-code-wrap">
           <p>
             ## * * * About me * * *<br />
@@ -183,7 +182,6 @@ export default defineComponent({
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
-  height: 100%;
   width: 100%;
   margin: 0;
 }
