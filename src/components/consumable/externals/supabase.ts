@@ -137,6 +137,11 @@ class Supabase {
   async moveFile(name: string, fromPath: string, toPath: string) {
     return await this.conn.storage.from(name).move(fromPath, toPath)
   }
+  async invokeFunction(name: string, body: object) {
+    return await this.conn.functions.invoke(name, {
+      body: JSON.stringify(body)
+    })
+  }
 }
 
 const supabase = new Supabase(

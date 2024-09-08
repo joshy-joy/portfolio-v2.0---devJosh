@@ -1,8 +1,18 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import eventBus from '../../consumable/eventBus'
+import supabase from '../../consumable/externals/supabase'
+import { type SendEmailRequest } from '../../consumable/constants/common'
 
 const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const getPersonalEmailTemplate = (name: string, email: string, message: string) => {
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Inquiry Received</title><style>body{font-family:Arial,sans-serif;background-color:#f4f4f4;margin:0;padding:0}table{max-width:600px;width:100%;margin:0 auto;background-color:#fff}.header{background-color:#4caf50;color:#fff;text-align:center;padding:20px}.content{padding:20px}.contact{padding:0 0 0 40px}.content p{line-height:1.6}.button{display:inline-block;padding:10px 20px;background-color:#4caf50;color:#fff;text-decoration:none;border-radius:5px;margin-top:20px}.footer{background-color:#f4f4f4;color:#666;text-align:center;padding:10px;font-size:12px}</style></head><body><table cellpadding="0" cellspacing="0"><tr><td class="header"><h1>Got a message on portfolio</h1></td></tr><tr><td class="content"><p>From:</p><p class="contact">Name: ${name}</p><p class="contact">Email: ${email}</p></td></tr><tr><td class="content"><p class="contact">${message}</p></td></tr><tr><td class="footer"><p>&copy; joshy_joy. All rights reserved.</p></td></tr></table></body></html>`
+}
+
+const getClientEmailTemplate = (name: string) => {
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Inquiry Received</title><style>body{font-family:Arial,sans-serif;background-color:#f4f4f4;margin:0;padding:0}table{max-width:600px;width:100%;margin:0 auto;background-color:#fff}.header{background-color:#4caf50;color:#fff;text-align:center;padding:20px}.content{padding:20px}.content p{line-height:1.6}.button{display:inline-block;padding:10px 20px;background-color:#4caf50;color:#fff;text-decoration:none;border-radius:5px;margin-top:20px}.footer{background-color:#f4f4f4;color:#666;text-align:center;padding:10px;font-size:12px}</style></head><body><table cellpadding="0" cellspacing="0"><tr><td class="header"><h1>Thank You for Reaching Out!</h1></td></tr><tr><td class="content"><p>Hello ${name},</p><p>We’ve received your inquiry via our portfolio contact form, and we wanted to let you know that we are reviewing it. I will get back to you shortly to address your questions or provide the information you need.</p><p>Thank you for getting in touch with us!</p><p>Best regards,</p><p style="margin:0"><strong>JOSHY JOY</strong></p><p style="margin:0"><strong>Senior Software Engineer</strong></p></td></tr><tr><td class="footer"><p>&copy; joshy_joy. All rights reserved.</p></td></tr></table></body></html>`
+}
 
 export default defineComponent({
   data() {
@@ -42,20 +52,58 @@ export default defineComponent({
     sendMessage() {
       if (this.name === '') {
         this.isNameEmpty = true
+        return
       }
       if (this.message === '') {
         this.isMessageEmpty = true
+        return
       }
       if (this.email === '' || !regex.test(this.email)) {
         this.isInvalidEmail = true
+        return
       }
       if (!this.isNameEmpty && !this.isMessageEmpty && !this.isInvalidEmail) {
+        this.sendClientEmail()
+        this.sendPersonalEmail()
+        this.sendNewMessage()
         this.isSubmited = true
       }
     },
     sendNewMessage() {
       this.resetFrom()
       this.isSubmited = false
+    },
+    sendClientEmail() {
+      const request: SendEmailRequest = {
+        name: this.name,
+        email: this.email,
+        subject: 'Thank you for reaching out to joshy_joy',
+        html: getClientEmailTemplate(this.name)
+      }
+      supabase
+        .invokeFunction('send-email', request)
+        .then(() => {
+          console.log('email send')
+        })
+        .then((err) => {
+          console.log(err)
+        })
+    },
+    sendPersonalEmail() {
+      const request: SendEmailRequest = {
+        name: this.name,
+        email: 'joshyjoy.dev@gmail.com',
+        subject: 'Someone reachout to you via portfolio !',
+        html: getPersonalEmailTemplate(this.name, this.email, this.message)
+      }
+      supabase
+        .invokeFunction('send-email', request)
+        .then(() => {
+          console.log('email send')
+        })
+        .then((err) => {
+          console.log(err)
+        })
     }
   },
   mounted() {
