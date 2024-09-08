@@ -87,24 +87,61 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="container-fluid">
-    <div class="title-wrap">
-      <h1>{{ blog.name }}</h1>
+  <div class="container">
+    <div class="loader-wrap" v-if="!blog.content">
+      <div class="loader"></div>
     </div>
-    <div class="image-wrap">
-      <img :src="blog.image" alt="imgage" />
+    <div class="blog-post-wrap" v-else>
+      <div class="title-wrap">
+        <h1>{{ blog.name }}</h1>
+      </div>
+      <div class="image-wrap">
+        <img :src="blog.image" alt="imgage" />
+      </div>
+      <div class="blog-wrap" v-html="highlightedCode"></div>
     </div>
-    <div class="blog-wrap" v-html="highlightedCode"></div>
   </div>
 </template>
 
 <style scoped>
-.container-fluid {
+.container {
+  font-family: monospace, monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.blog-post-wrap {
   font-family: monospace, monospace;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  max-width: 100%;
+}
+
+.loader-wrap {
+  position: fixed;
+  top: 30%;
+  left: 55%;
+}
+
+.loader {
+  width: 50px;
+  padding: 8px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #0279cb;
+  --_m: conic-gradient(#0000 10%, #000), linear-gradient(#000 0 0) content-box;
+  -webkit-mask: var(--_m);
+  mask: var(--_m);
+  -webkit-mask-composite: source-out;
+  mask-composite: subtract;
+  animation: l3 1s infinite linear;
+}
+@keyframes l3 {
+  to {
+    transform: rotate(1turn);
+  }
 }
 
 .title-wrap {
@@ -124,7 +161,7 @@ export default defineComponent({
 }
 .blog-wrap,
 .image-wrap {
-  max-width: 70%;
+  max-width: 100%;
   color: #bcbcbc;
 }
 .blog-wrap::v-deep(.ql-syntax) {
