@@ -7,3 +7,10 @@ export interface DynamicFormProp {
   required: boolean
   validation?: Array<string>
 }
+
+export interface SendEmailRequest {
+  name: string
+  email: string
+  subject: string
+  html: string
+}
