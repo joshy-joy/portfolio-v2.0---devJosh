@@ -87,7 +87,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <div class="container-fluid">
+  <div class="container">
     <div class="loader-wrap" v-if="!blog.content">
       <div class="loader"></div>
     </div>
@@ -104,13 +104,19 @@ export default defineComponent({
 </template>
 
 <style scoped>
-.container-fluid,
+.container {
+  font-family: monospace, monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 .blog-post-wrap {
   font-family: monospace, monospace;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  max-width: 100%;
 }
 
 .loader-wrap {
@@ -155,7 +161,7 @@ export default defineComponent({
 }
 .blog-wrap,
 .image-wrap {
-  max-width: 70%;
+  max-width: 100%;
   color: #bcbcbc;
 }
 .blog-wrap::v-deep(.ql-syntax) {
