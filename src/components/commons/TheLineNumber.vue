@@ -29,7 +29,6 @@ export default defineComponent({
 .line-number-wrap {
   max-height: 100%;
   min-width: 40px;
-  overflow: hidden;
   padding: 5px 0 0 10px;
 }
 
