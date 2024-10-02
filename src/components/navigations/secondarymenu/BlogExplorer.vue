@@ -38,7 +38,7 @@ export default defineComponent({
         table: blogsConstants.SUPABASE_TABLE_BLOGS,
         columns: [
           blogsTableColumns.ID,
-          blogsTableColumns.IMAGE,
+          blogsTableColumns.ICON,
           blogsTableColumns.NAME,
           blogsTableColumns.UPDATED_AT
         ],
@@ -52,7 +52,7 @@ export default defineComponent({
               const blog: Blog = {
                 id: item.id,
                 name: item.name,
-                image: item.image,
+                icon: item.icon,
                 updated_at: item.updated_at?.slice(0, 10)
               }
               return blog
@@ -91,9 +91,7 @@ export default defineComponent({
       <div class="secondary-menu-list">
         <div class="secondary-menu-list_item" :key="blog.id" v-for="blog in blogList">
           <router-link :to="'/blog/' + blog.id" @click="openTab(blog.name, `/blog/${blog.id}`)">
-            <div class="blog-item-img">
-              <img :src="blog.image" alt="cover" />
-            </div>
+            <div class="blog-item-img" v-html="blog.icon"></div>
             <div class="blog-item-description">
               <p class="blog-description">{{ blog.name }}</p>
               <p class="blog-date">{{ blog.updated_at }}</p>
@@ -171,14 +169,13 @@ input[type='text']:focus {
   cursor: pointer;
 }
 
-.blog-item-img img {
-  height: 50px;
-  padding: 0 10px 0 0;
+.blog-item-img::v-deep(img) {
+  height: 40px;
 }
 
 .blog-item-description p {
   margin: 0;
-  padding: 0 15px;
+  padding: 0 10px;
   font-family: 'Roboto', sans-serif !important;
 }
 
