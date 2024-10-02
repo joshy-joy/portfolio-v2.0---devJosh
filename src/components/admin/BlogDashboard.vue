@@ -32,7 +32,8 @@ const getNewFormConfiguration = (): Object => {
     name: '',
     content: '',
     image: '',
-    tags: ''
+    tags: '',
+    icon: ''
   }
 }
 
@@ -41,7 +42,8 @@ const getEditFormConfiguration = (data: Blog): Object => {
     name: data.name,
     content: data.content,
     image: data.image,
-    tags: data.tags
+    tags: data.tags,
+    icon: data.icon
   }
 }
 export default defineComponent({
@@ -103,6 +105,7 @@ export default defineComponent({
       this.form = [
         { name: blogsTableColumns.NAME, label: 'Name', type: 'text', required: true },
         { name: blogsTableColumns.TAG, label: 'Tags', type: 'text', required: true },
+        { name: blogsTableColumns.ICON, label: 'Icon', type: 'text', required: true },
         { name: blogsTableColumns.IMAGE, label: 'Image', type: 'file', required: true },
         {
           name: blogsTableColumns.CONTENT,

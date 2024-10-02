@@ -12,5 +12,6 @@ export const blogsTableColumns = {
   TAG: 'tags',
   CREATED_AT: 'created_at',
   UPDATED_AT: 'updated_at',
-  IS_DELETED: 'is_deleted'
+  IS_DELETED: 'is_deleted',
+  ICON: 'icon'
 }
