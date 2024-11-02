@@ -17,12 +17,14 @@ import eventBus from '../../consumable/eventBus'
 
 interface BlogPageType {
   blog: Blog
+  isLoading: boolean
 }
 
 export default defineComponent({
   data(): BlogPageType {
     return {
-      blog: {}
+      blog: {},
+      isLoading: false
     }
   },
   computed: {
@@ -38,12 +40,13 @@ export default defineComponent({
     }
   },
   methods: {
-    getBlog() {
+    getBlog(id: string) {
+      this.isLoading = true
       const filter: Array<QueryFilter> = [
         {
           type: FilterTypes.EQ,
           column: blogsTableColumns.ID,
-          value: this.$route.params.id
+          value: id
         }
       ]
       let query: Query = {
@@ -72,23 +75,28 @@ export default defineComponent({
               content: item.content,
               tags: item.tags
             }
-            eventBus.emit('openTab', item.name, `/blog/${item.id}`)
           }
+          this.isLoading = false
         })
         .catch((err: Error) => {
           eventBus.emit('notify', err.message)
+          this.isLoading = false
         })
     }
   },
   beforeMount() {
-    this.getBlog()
+    let id = this.$route.params.id as string
+    this.getBlog(id)
+    eventBus.on('showBlogWithID', (id: string) => {
+      this.getBlog(id)
+    })
   }
 })
 </script>
 
 <template>
   <div class="container">
-    <div class="loader-wrap" v-if="!blog.content">
+    <div class="loader-wrap" v-if="isLoading">
       <div class="loader"></div>
     </div>
     <div class="blog-post-wrap" v-else>
@@ -96,7 +104,7 @@ export default defineComponent({
         <h1>{{ blog.name }}</h1>
       </div>
       <div class="image-wrap">
-        <img :src="blog.image" alt="imgage" />
+        <img :src="blog.image" alt="image" />
       </div>
       <div class="blog-wrap" v-html="highlightedCode"></div>
     </div>

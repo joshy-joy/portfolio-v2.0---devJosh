@@ -2,7 +2,6 @@
 import { defineComponent } from 'vue'
 
 import eventBus from '../consumable/eventBus'
-
 interface Tab {
   tabName: string
   path: string
@@ -18,7 +17,7 @@ const getTabIndex = (tabs: Array<Tab>, term: string) =>
 export default defineComponent({
   data() {
     return {
-      tabs: [{ tabName: 'Home.go', path: '/', isActive: true }]
+      tabs: [{ tabName: 'Home.go', path: '/', isActive: true}]
     }
   },
   methods: {
@@ -26,6 +25,10 @@ export default defineComponent({
       let index = getTabIndex(this.tabs, name)
       this.tabs.forEach(diactivate)
       this.tabs[index].isActive = true
+      const isBlog = this.tabs[index].path.includes('blog')
+      if (isBlog) {
+        this.emitBlogRenderEvent(this.tabs[index].path)
+      }
     },
     closeTab(name: string) {
       if (name !== 'Home.go') {
@@ -36,16 +39,24 @@ export default defineComponent({
         }
         this.tabs.splice(index, 1)
       }
+    },
+    emitBlogRenderEvent(path: string) {
+      let id = path.split("/")
+      eventBus.emit('showBlogWithID', id[id.length-1])
     }
   },
   mounted() {
     eventBus.on('openTab', (tabName: string, path: string) => {
       let index = getTabIndex(this.tabs, tabName)
       this.tabs.forEach(diactivate)
+      const isBlog = path.includes('blog')
+      if (isBlog) {
+        this.emitBlogRenderEvent(path)
+      }
       if (index >= 0) {
         this.tabs[index].isActive = true
       } else {
-        this.tabs.push({ tabName: tabName, path: path, isActive: true })
+        this.tabs.push({ tabName: tabName, path: path, isActive: true})
       }
     })
   }
