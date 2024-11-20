@@ -157,7 +157,7 @@ export default defineComponent({
               </div>
               <div class="timeline__component timeline__component--bg">
                 <h2 class="timeline__title">Choice Home</h2>
-                <p class="timeline__paragraph">Sfotware Developer Intern</p>
+                <p class="timeline__paragraph">Software Developer Intern</p>
               </div>
             </div>
           </div>
